@@ -1,0 +1,15 @@
+#1 Azimuth: 40:11:39.7 Altitude: -37:19:23.2
+#2 Azimuth: 40:10:54.9 Altitude: -37:17:21.9
+#3 Azimuth: 40:10:10.2 Altitude: -37:15:20.6
+#4 Azimuth: 40:09:25.5 Altitude: -37:13:19.5
+#5 Azimuth: 40:08:40.8 Altitude: -37:11:18.2
+#6 Azimuth: 40:07:56.1 Altitude: -37:09:17.0
+#7 Azimuth: 40:07:11.4 Altitude: -37:07:15.7
+#8 Azimuth: 40:06:26.7 Altitude: -37:05:14.5
+#9 Azimuth: 40:05:41.9 Altitude: -37:03:13.1
+#10 Azimuth: 40:04:57.1 Altitude: -37:01:11.7
+#11 Azimuth: 40:04:12.4 Altitude: -36:59:10.5
+#12 Azimuth: 40:03:27.6 Altitude: -36:57:09.2
+#13 Azimuth: 40:02:42.8 Altitude: -36:55:07.7
+#14 Azimuth: 40:01:58.1 Altitude: -36:53:06.4
+#15 Azimuth: 40:01:13.3 Altitude: -36:51:05.1
