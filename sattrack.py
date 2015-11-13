@@ -2,6 +2,7 @@ __author__ = 'Ibrahim'
 
 import ephem
 from datetime import datetime
+from dateutil import tz, parser
 import requests
 from lxml import html
 import time
@@ -9,9 +10,6 @@ import threading as th
 import serial
 from interface import *
 import webbrowser as wb
-# import matplotlib.pyplot as plt
-# from mpl_toolkits.basemap import Basemap
-# import numpy as np
 
 
 class SatTrack:
@@ -26,6 +24,7 @@ class SatTrack:
         self.azmotor = None
         self.altmotor = None
         self.server = Server()
+        self.tle = None
 
     def set_location(self, lat='36.1486', lon='-86.8050', ele=182):
         """
@@ -37,8 +36,8 @@ class SatTrack:
         self.observer.lat = lat
         self.observer.lon = lon
         self.observer.elev = ele
-        self.observer.epoch = datetime.utcnow()
-        self.observer.date = datetime.utcnow()
+        self.observer.epoch = ephem.Date(str(datetime.utcnow()))
+        self.observer.date = ephem.Date(str(datetime.utcnow()))
 
     def _update_coords(self, t):
         """
@@ -49,7 +48,7 @@ class SatTrack:
         while True:
             with self.lock:
                 try:
-                    self.observer.date = datetime.utcnow()
+                    self.observer.date = ephem.Date(str(datetime.utcnow()))
                     self.satellite.compute(self.observer)
                     self._isActive = True
                 except:
@@ -90,7 +89,6 @@ class SatTrack:
         self.server.start_server()
         url = 'http://' + str(self.server.host) + ':' + str(self.server.port) + '/' + self.id
         wb.open(url, new=2)
-
 
     def connect_servos(self, port=2, minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0)):
         """
@@ -149,8 +147,55 @@ class SatTrack:
         data = f.readlines()
         f.close()
         self.satellite = ephem.readtle(data[0], data[1], data[2])
+        self.tle = data
         self.id = sanitize(data[0])
         return data
+
+    def next_pass(self, datestr=None, convert=True):
+        """
+        Takes date as string (or defaults to current time) to compute the next closest pass of a satellite for the
+        observer. Times are returned in local time zone, and angles are returned in degrees.
+        :param datestr: string containing date
+        :param convert: whether or not to convert to time string/ angle degrees
+        :return: a dictionary of values
+        """
+        if datestr is not None:
+            date = parser.parse(datestr)
+            date = date.replace(tzinfo=tz.tzlocal())
+            dateutc = ephem.Date(str(date.astimezone(tz.tzutc())))
+        else:
+            dateutc = ephem.Date(str(datetime.utcnow()))
+        observer = ephem.Observer()             # create a copy of observer
+        observer.lon = self.observer.lon
+        observer.lat = self.observer.lat
+        observer.elev = self.observer.elev
+        observer.epoch = self.observer.epoch
+        observer.date = ephem.Date(dateutc + ephem.minute)
+        satellite = ephem.readtle(self.tle[0], self.tle[1], self.tle[2])        # make a copy of satellite
+        satellite.compute(observer)
+        next_pass = observer.next_pass(satellite)
+        if convert:
+            next_pass = {'risetime': tolocal(next_pass[0]), 'riseaz': todegs(next_pass[1]), 'maxtime': tolocal(next_pass[2])
+                        , 'maxalt': todegs(next_pass[3]), 'settime': tolocal(next_pass[4]), 'setaz': todegs(next_pass[5])}
+        else:
+            next_pass = {'risetime': next_pass[0], 'riseaz': next_pass[1], 'maxtime': next_pass[2]
+                        , 'maxalt': next_pass[3], 'settime': next_pass[4], 'setaz': next_pass[5]}
+        return next_pass
+
+    def next_passes(self, n, startdate=None, convert=True):
+        """
+        calculate the next n passes starting from the given date (or default to current time). Dates calculated are
+        in local time.
+        :param n: number of passes to calculate
+        :param startdate: earliest time to calculate from
+        :param convert: convert to degree angles and string dates?
+        :return: a list of dictionaries for each pass
+        """
+        result = []
+        for i in range(n):
+            result.append(self.next_pass(startdate, convert))
+            startdate = str(result[i]['settime'])
+        return result
 
     def get_tle(self, noradid, destination=None):
         """
@@ -170,6 +215,7 @@ class SatTrack:
             f.writelines(data)
             f.close()
         self.satellite = ephem.readtle(sanitize(noradid), data[0], data[1])
+        self.tle = [str(noradid), data[0], data[1]]
         self.id = str(noradid)
         return data
 
@@ -239,28 +285,40 @@ def sanitize(string):
     return str(''.join([x for x in string if x.isalnum()]))
 
 
-def main():
+def tolocal(utc):       # takes ephem date object and returns localtime string
+    return parser.parse(str(ephem.localtime(utc))).strftime('%Y-%m-%d %H:%M:%S')
+
+
+def test(tlepath='fox1.tle'):
     s = SatTrack()
-    print 'Initialized...'
     s.set_location()
-    print 'Location set...'
-    s.load_tle('fox1.tle')
-    print 'Satellite data loaded. ID:', s.id
+    s.load_tle(tlepath)
     #s.get_tle(40967)
-    print '\nComputing next pass (UTC):'
     print s.observer.next_pass(s.satellite)
-    s.begin_computing()
-    print 'Starting real-time coordinate tracking...'
+    #s.begin_computing()
     #s.connect_servos(minrange=(10, 10), maxrange=(170, 170))
     #s.begin_tracking()
-    s.visualize()
+    #s.visualize()
     #s.show_position()
-    print 'Front end server set up...'
-    i = input('Exit? ... ')
-    if i =='y':
-        s.server.stop_server()
-    print 'server closed'
+    # print 'Front end server set up...'
+    # i = input('Exit? ... ')
+    # if i =='y':
+    #     s.server.stop_server()
+    # print 'server closed'
+    return s
+
+
+def store_passes(outpath, n=100, tlepath='fox1.tle'):
+    s = test(tlepath)
+    data = s.next_passes(n)
+    import csv
+    keys = ['risetime', 'riseaz', 'maxtime', 'maxalt', 'settime', 'setaz']
+    with open(outpath, 'wb') as output_file:
+        dict_writer = csv.DictWriter(output_file, keys)
+        dict_writer.writeheader()
+        dict_writer.writerows(data)
+
 
 if __name__ == '__main__':
-   main()
+   test()
 
