@@ -5,7 +5,7 @@ This code is for my engineering senior design project. The python class SatTrack
 * Load satellite TLE data from file / parse web sources for it
 * Track satellite position in real time
 * Predict next pass (or next n passes)
-* Connect to servo motors vis serial port - arduino interface
+* Connect to servo motors via serial port - arduino interface
 * Visualize satellite position using a web interface implemented in D3js
 
 This project is still in development and has not been packaged for quick installation.
