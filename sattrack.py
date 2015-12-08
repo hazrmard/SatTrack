@@ -39,7 +39,7 @@ class SatTrack:
         self.observer.epoch = ephem.Date(str(datetime.utcnow()))
         self.observer.date = ephem.Date(str(datetime.utcnow()))
 
-    def _update_coords(self, t):
+    def _update_coords(self, t, trace):
         """
         This function runs in a thread started in 'begin_computing' and recomputes the satellites position after
         interval 't'.
@@ -48,7 +48,10 @@ class SatTrack:
         while True:
             with self.lock:
                 try:
-                    self.observer.date = ephem.Date(str(datetime.utcnow()))
+                    if trace > 0:
+                        self.observer.date = ephem.Date(self.observer.date + trace * ephem.second)
+                    else:
+                        self.observer.date = ephem.Date(str(datetime.utcnow()))
                     self.satellite.compute(self.observer)
                     self._isActive = True
                 except:
@@ -72,14 +75,14 @@ class SatTrack:
                     self.altmotor.move(int(alt))
             time.sleep(t)
 
-    def begin_computing(self, interval=1, display=False):
+    def begin_computing(self, interval=1.0, trace=0.0, display=False):
         """
         Starts a thread that computes satellite's coordinates in real time based on the observer's coordinates.
         :param interval: Time between computations.
         :param display: To show a map with the satellite's location.
         """
         self.interval = interval
-        t = th.Thread(target=self._update_coords, args=[interval])
+        t = th.Thread(target=self._update_coords, args=[interval, trace])
         t.daemon = True
         self.threads['tracker'] = t
         t.start()
@@ -294,11 +297,11 @@ def test(tlepath='fox1.tle'):
     s.set_location()
     s.load_tle(tlepath)
     #s.get_tle(40967)
-    print s.observer.next_pass(s.satellite)
-    #s.begin_computing()
+    print s.next_pass()
+    s.begin_computing(interval=0.025, trace=1)  # trace > 0 speeds up by a factor of trace / interval
     #s.connect_servos(minrange=(10, 10), maxrange=(170, 170))
     #s.begin_tracking()
-    #s.visualize()
+    s.visualize()
     #s.show_position()
     # print 'Front end server set up...'
     # i = input('Exit? ... ')

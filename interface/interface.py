@@ -92,7 +92,10 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
         d = {}
         d['lon'] = source.satellite.sublong * 180 / 3.14
         d['lat'] = source.satellite.sublat * 180/ 3.14
+        d['az'] = source.satellite.alt * 180/ 3.14
+        d['alt'] = source.satellite.alt * 180/ 3.14
         d['interval'] = source.interval
+        d['time'] = str(source.observer.date)
         return d
 
     def log_message(self, format, *args):   # override to silence console output

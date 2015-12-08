@@ -1,11 +1,19 @@
 ﻿$(document).ready(function() {
 	console.log("Document Loaded");
-	$svg = d3.select("body").append("svg")
+	$svg = d3.select("#svg").append("svg")
     .attr("width", width)
     .attr("height", height);
 	draw();
 	$lon = 0;
 	$lat = 0;
+	$az = 0;
+	$alt = 0;
+	$time = "";
+	$lonlabel = d3.select("#lon");
+	$latlabel = d3.select("#lat");
+	$azilabel = d3.select("#azi");
+	$altlabel = d3.select("#alt");
+	$timelabel = d3.select("#time");
 	getStatus();
 	$svg.selectAll("circle")
 		.data([[$lon, $lat]]).enter()
@@ -75,6 +83,14 @@ function getStatus(){
 	$.getJSON(window.location.href + '?status', function(data) {
 			$lon = parseFloat(data.lon);
 			$lat = parseFloat(data.lat);
+			$az = parseFloat(data.az);
+			$alt = parseFloat(data.alt);
+			$time = data.time;
+			$lonlabel.text($lon.toFixed(3));
+			$latlabel.text($lat.toFixed(3));
+			$azilabel.text($az.toFixed(3));
+			$altlabel.text($alt.toFixed(3));
+			$timelabel.text($time + " UTC");
 			// console.log(data);
 			rotateProjection($lat, $lon);
 			plotPoints(parseFloat($lat), parseFloat($lon));

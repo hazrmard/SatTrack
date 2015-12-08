@@ -28,3 +28,12 @@
   stroke: #fff;
   stroke-width: .5px;
 }
+
+div {
+	display: inline-block;
+	vertical-align: top;
+}
+
+#data {
+	margin: 50px;
+}
