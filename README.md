@@ -8,6 +8,9 @@ This code is for my engineering senior design project. The python class SatTrack
 * Connect to servo motors via serial port - arduino interface
 * Visualize satellite position using a web interface implemented in D3js
 
+An example of satellite tracking interface:  
+![image](https://github.com/hazrmard/SatTrack/raw/master/demo.gif)
+
 This project is still in development and has not been packaged for quick installation.
 
 External python dependencies are:
