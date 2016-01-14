@@ -292,27 +292,10 @@ def tolocal(utc):       # takes ephem date object and returns localtime string
     return parser.parse(str(ephem.localtime(utc))).strftime('%Y-%m-%d %H:%M:%S')
 
 
-def test(tlepath='fox1.tle'):
+def store_passes(outpath, n=100, tlepath='fox1.tle'):
     s = SatTrack()
     s.set_location()
     s.load_tle(tlepath)
-    #s.get_tle(40967)
-    print s.next_pass()
-    s.begin_computing(interval=0.025, trace=1)  # trace > 0 speeds up by a factor of trace / interval
-    #s.connect_servos(minrange=(10, 10), maxrange=(170, 170))
-    #s.begin_tracking()
-    s.visualize()
-    #s.show_position()
-    # print 'Front end server set up...'
-    # i = input('Exit? ... ')
-    # if i =='y':
-    #     s.server.stop_server()
-    # print 'server closed'
-    return s
-
-
-def store_passes(outpath, n=100, tlepath='fox1.tle'):
-    s = test(tlepath)
     data = s.next_passes(n)
     import csv
     keys = ['risetime', 'riseaz', 'maxtime', 'maxalt', 'settime', 'setaz']
@@ -323,5 +306,5 @@ def store_passes(outpath, n=100, tlepath='fox1.tle'):
 
 
 if __name__ == '__main__':
-   test()
+   pass
 
