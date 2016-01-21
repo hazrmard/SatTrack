@@ -51,7 +51,7 @@ def move(servo, angle):
     if (0 <= angle <= 359):
         ser.write(chr(255))
         ser.write(chr(servo))
-        ser.write(chr(struct.pack('>h',angle)[0]))
-        ser.write(chr(struct.pack('>h',angle)[1]))
+        ser.write(struct.pack('>h',angle)[0])
+        ser.write(struct.pack('>h',angle)[1])
     else:
         raise ValueError('Servo must be between 1 and 6 and angle must be between 0 and 359 deg.')

@@ -277,8 +277,8 @@ class Motor:
             raise ValueError('Angle out of range.')
         self.port.write(chr(255))
         self.port.write(chr(self.motor))
-        self.port.write(chr(struct.pack('>h',angle)[0]))
-        self.port.write(chr(struct.pack('>h',angle)[1]))
+        self.port.write(struct.pack('>h',angle)[0])
+        self.port.write(struct.pack('>h',angle)[1])
         self.current_pos = angle
 
 
