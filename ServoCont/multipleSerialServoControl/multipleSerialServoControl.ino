@@ -44,7 +44,7 @@ int minPulse = 600;   // minimum servo position, us (microseconds)
 int maxPulse = 2400;  // maximum servo position, us
 
 // User input for servo and position
-int userInput[3];    // raw input from serial buffer, 3 bytes
+int userInput[4];    // raw input from serial buffer, 4 bytes
 int startbyte;       // start byte, begin reading input
 int servo;           // which servo to pulse?
 int pos;             // servo angle 0-180
@@ -77,21 +77,23 @@ void setup()
 void loop() 
 { 
   // Wait for serial input (min 3 bytes in buffer)
-  if (Serial.available() > 2) {
+  if (Serial.available() > 3) {
     // Read the first byte
     startbyte = Serial.read();
     // If it's really the startbyte (255) ...
     if (startbyte == 255) {
-      // ... then get the next two bytes
-      for (i=0;i<2;i++) {
+      // ... then get the next three bytes
+      for (i=0;i<3;i++) {
         userInput[i] = Serial.read();
       }
       // First byte = servo to move?
       servo = userInput[0];
       // Second byte = which position?
       pos = userInput[1];
+      pos = pos << 8;
+      pos |= userInput[2];
       // Packet error checking and recovery
-      if (pos == 255) { servo = 255; }
+      //if (pos == 255) { servo = 255; }
 
       // Assign new position to appropriate servo
       switch (servo) {

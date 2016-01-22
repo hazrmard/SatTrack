@@ -1,0 +1,6 @@
+﻿*.csv
+build/
+dist/
+experiments/
+SatTrack.egg-info
+*.pyc

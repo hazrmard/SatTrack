@@ -10,6 +10,7 @@ import threading as th
 import serial
 from interface import *
 import webbrowser as wb
+import struct
 
 
 class SatTrack:
@@ -90,7 +91,9 @@ class SatTrack:
     def visualize(self):
         self.server.add_source(self)
         self.server.start_server()
-        url = 'http://' + str(self.server.host) + ':' + str(self.server.port) + '/' + self.id
+        url = 'http://' + str(self.server.host) + ':' + str(self.server.port) + '/' + self.id + '/'
+        url = sanitize_url(url)
+        print "opening URL: " + url
         wb.open(url, new=2)
 
     def connect_servos(self, port=2, minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0)):
@@ -131,8 +134,8 @@ class SatTrack:
         """
         with self.lock:
             vertically = (todegs(self.satellite.alt) >= self.altmotor.range[0] + self.altmotor.pos0) and (todegs(self.satellite.alt) <= self.altmotor.range[1] + self.altmotor.pos0)
-            hozizontally = (todegs(self.satellite.az) >= self.azmotor.range[0] + self.azmotor.pos0) and (todegs(self.satellite.az) <= self.azmotor.range[1] + self.azmotor.pos0)
-            return vertically and hozizontally
+            horizontally = (todegs(self.satellite.az) >= self.azmotor.range[0] + self.azmotor.pos0) and (todegs(self.satellite.az) <= self.azmotor.range[1] + self.azmotor.pos0)
+            return vertically and horizontally
 
     def is_observable(self):
         """
@@ -276,7 +279,8 @@ class Motor:
             raise ValueError('Angle out of range.')
         self.port.write(chr(255))
         self.port.write(chr(self.motor))
-        self.port.write(chr(angle))
+        self.port.write(struct.pack('>h',angle)[0])
+        self.port.write(struct.pack('>h',angle)[1])
         self.current_pos = angle
 
 
