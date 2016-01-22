@@ -26,7 +26,7 @@ def test_web(tlepath='fox1.tle'):
     s.set_location()
     s.load_tle(tlepath)
     #s.get_tle(40967)
-    print s.next_pass()
+    #print s.next_pass()
     s.begin_computing(interval=1, trace=0)  # trace > 0 speeds up by a factor of trace / interval (otherwise realtime)
     #s.connect_servos(minrange=(10, 10), maxrange=(170, 170))
     #s.begin_tracking()
@@ -37,9 +37,14 @@ def test_web(tlepath='fox1.tle'):
     # if i =='y':
     #     s.server.stop_server()
     # print 'server closed'
-    return s
+    # return s
 
 
 def q():
-    Server().stop_server()
-    exit()
+    try:
+        Server().stop_server()
+        print "Server closed."
+    except:
+        "Server already closed"
+    reload(sattrack)
+    print '\nsattrack reloaded...'

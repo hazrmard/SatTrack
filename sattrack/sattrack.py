@@ -91,7 +91,9 @@ class SatTrack:
     def visualize(self):
         self.server.add_source(self)
         self.server.start_server()
-        url = 'http://' + str(self.server.host) + ':' + str(self.server.port) + '/sattrack/' + self.id
+        url = 'http://' + str(self.server.host) + ':' + str(self.server.port) + '/' + self.id + '/'
+        url = sanitize_url(url)
+        print "opening URL: " + url
         wb.open(url, new=2)
 
     def connect_servos(self, port=2, minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0)):

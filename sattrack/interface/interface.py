@@ -1,12 +1,11 @@
 __author__ = 'Ibrahim'
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import urlparse
 import json
 import threading as th
 import SimpleHTTPServer
-import re
 import os
+from helpers import *
 
 
 class Server:
@@ -58,10 +57,49 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def do_GET(self):
         """
         This function handles GET requests made by the client. The general URL is of the format:
-            http://localhost:PORT/SATELLITE_ID?QUERY
+            http://localhost:PORT/SATELLITE_ID/?QUERY
         :return:
         """
-        parsed_path = urlparse.urlparse(self.path)
+        source = None
+        localpath = sanitize_url(os.path.dirname(__file__)) + '/'
+        parsed = parse_url(self.path)
+        print parsed
+        print '\noriginal path: ' + self.path + '\n'
+        if self.path == '/':                            # i.e. localhost:port_number/
+            self.path = localpath
+            print '\npath modified to: ' + self.path
+        if parsed['id']:                                # i.e. localhost:port_number/valid_id/
+            if parsed['id'] in Interface.sources:
+                source = Interface.sources[parsed['id']]
+            if not parsed['query']:                     # if GET request is not a JSON query then continue page loading
+                self.path = localpath
+        if parsed['staticfile']:                        # i.e. some_path/script.js (as referenced in index.html)
+            if parsed['staticfile'] in os.listdir(os.path.dirname(__file__)):
+                self.path = localpath + parsed['staticfile']
+                print '\nstatic file requested: ' + self.path
+            else:
+                self.send_response(400, 'File not found: ' + parsed['staticfile'])
+                return
+        if parsed['query']:                             # handle any queries
+            if parsed['query'] == u'status' and source:
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(self.genJSON(source)))
+            else:
+                self.send_response(400, 'Source not found.')
+            return      # quit after returning json
+
+        SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+
+    def _do_GET(self):
+        #   DEPRACATED
+        """
+        This function handles GET requests made by the client. The general URL is of the format:
+            http://localhost:PORT/SATELLITE_ID/?QUERY
+        :return:
+        """
+        parsed_path = urlparse(self.path)
         path = re.split(r'/|\\', parsed_path[2])
         path = [x for x in path if x != '']     # isolate path to find which satellite to use as source
         print 'interpreted path: '
@@ -104,8 +142,8 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
         d['time'] = str(source.observer.date)
         return d
 
-#    def log_message(self, format, *args):   # override to silence console output
-#        return
+    def log_message(self, format, *args):   # override to silence console output
+        return
 
 
 def main():
