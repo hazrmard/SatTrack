@@ -5,7 +5,7 @@ import json
 import threading as th
 import SimpleHTTPServer
 import os
-from helpers import *
+from ..helpers import *
 
 
 class Server:
@@ -134,10 +134,10 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def genJSON(self, source):
         d = {}
-        d['lon'] = source.satellite.sublong * 180 / 3.14
-        d['lat'] = source.satellite.sublat * 180/ 3.14
-        d['az'] = source.satellite.alt * 180/ 3.14
-        d['alt'] = source.satellite.alt * 180/ 3.14
+        d['lon'] = to_degs(source.satellite.sublong)
+        d['lat'] = to_degs(source.satellite.sublat)
+        d['az'] = to_degs(source.satellite.az)
+        d['alt'] = to_degs(source.satellite.alt)
         d['interval'] = source.interval
         d['time'] = str(source.observer.date)
         return d

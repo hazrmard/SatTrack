@@ -1,0 +1,4 @@
+﻿include sattrack/interface/*.js
+include sattrack/interface/*.css
+include sattrack/interface/*.html
+include sattrack/interface/*.json

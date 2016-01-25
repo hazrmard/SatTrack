@@ -37,7 +37,7 @@ def test_web(tlepath='fox1.tle'):
     # if i =='y':
     #     s.server.stop_server()
     # print 'server closed'
-    # return s
+    return s
 
 
 def q():
@@ -46,5 +46,3 @@ def q():
         print "Server closed."
     except:
         "Server already closed"
-    reload(sattrack)
-    print '\nsattrack reloaded...'

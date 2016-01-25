@@ -11,6 +11,7 @@ import serial
 from interface import *
 import webbrowser as wb
 import struct
+from .helpers import *
 
 
 class SatTrack:
@@ -67,8 +68,8 @@ class SatTrack:
         """
         while True:
             with self.lock:
-                az = todegs(self.satellite.az)
-                alt = todegs(self.satellite.alt)
+                az = to_degs(self.satellite.az)
+                alt = to_degs(self.satellite.alt)
             if self._isActive:
                 if abs(az - self.azmotor.current_pos) >= self.azmotor.resolution:
                     self.azmotor.move(int(az))
@@ -133,8 +134,8 @@ class SatTrack:
         Checks if the satellite's current position can be tracked by the motors (accounting for range and orientation)
         """
         with self.lock:
-            vertically = (todegs(self.satellite.alt) >= self.altmotor.range[0] + self.altmotor.pos0) and (todegs(self.satellite.alt) <= self.altmotor.range[1] + self.altmotor.pos0)
-            horizontally = (todegs(self.satellite.az) >= self.azmotor.range[0] + self.azmotor.pos0) and (todegs(self.satellite.az) <= self.azmotor.range[1] + self.azmotor.pos0)
+            vertically = (to_degs(self.satellite.alt) >= self.altmotor.range[0] + self.altmotor.pos0) and (to_degs(self.satellite.alt) <= self.altmotor.range[1] + self.altmotor.pos0)
+            horizontally = (to_degs(self.satellite.az) >= self.azmotor.range[0] + self.azmotor.pos0) and (to_degs(self.satellite.az) <= self.azmotor.range[1] + self.azmotor.pos0)
             return vertically and horizontally
 
     def is_observable(self):
@@ -181,8 +182,8 @@ class SatTrack:
         satellite.compute(observer)
         next_pass = observer.next_pass(satellite)
         if convert:
-            next_pass = {'risetime': tolocal(next_pass[0]), 'riseaz': todegs(next_pass[1]), 'maxtime': tolocal(next_pass[2])
-                        , 'maxalt': todegs(next_pass[3]), 'settime': tolocal(next_pass[4]), 'setaz': todegs(next_pass[5])}
+            next_pass = {'risetime': tolocal(next_pass[0]), 'riseaz': to_degs(next_pass[1]), 'maxtime': tolocal(next_pass[2])
+                        , 'maxalt': to_degs(next_pass[3]), 'settime': tolocal(next_pass[4]), 'setaz': to_degs(next_pass[5])}
         else:
             next_pass = {'risetime': next_pass[0], 'riseaz': next_pass[1], 'maxtime': next_pass[2]
                         , 'maxalt': next_pass[3], 'settime': next_pass[4], 'setaz': next_pass[5]}
@@ -209,20 +210,17 @@ class SatTrack:
         :param noradid: Satellite's NORAD designation
         :param destination: Place to save the data for later use (optional).
         """
-        url = 'http://www.n2yo.com/satellite/?s=' + str(noradid)
-        page = requests.get(url)                # getting html data
-        tree = html.fromstring(page.text)       # converting to tree format for parsing
-        data = tree.xpath('//div/pre/text()')   # remove all newline and whitespace
-        data = data[0].rstrip().strip('\r').strip('\n')     # remove \r and \n
-        data = data.splitlines()
+        data = parse_text_tle(noradid, AMSAT_URL)
+        if not data:
+            data = parse_text_tle(noradid, base_CELESTRAK_URL, CELESTRAK_paths)
         if destination is not None:             # write to destination if provided
             f = open(destination, 'wb')
             data = [str(noradid)] + data
             f.writelines(data)
             f.close()
-        self.satellite = ephem.readtle(sanitize(noradid), data[0], data[1])
+        self.satellite = ephem.readtle(noradid, data[0], data[1])
         self.tle = [str(noradid), data[0], data[1]]
-        self.id = str(noradid)
+        self.id = sanitize(str(noradid))
         return data
 
     def show_position(self):
@@ -282,18 +280,6 @@ class Motor:
         self.port.write(struct.pack('>h',angle)[0])
         self.port.write(struct.pack('>h',angle)[1])
         self.current_pos = angle
-
-
-def todegs(rads):
-    return rads * 180 / ephem.pi
-
-
-def sanitize(string):
-    return str(''.join([x for x in string if x.isalnum()]))
-
-
-def tolocal(utc):       # takes ephem date object and returns localtime string
-    return parser.parse(str(ephem.localtime(utc))).strftime('%Y-%m-%d %H:%M:%S')
 
 
 def store_passes(outpath, n=100, tlepath='fox1.tle'):
