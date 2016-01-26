@@ -2,7 +2,6 @@ __author__ = 'Ibrahim'
 
 import ephem
 from datetime import datetime
-from dateutil import tz, parser
 import requests
 from lxml import html
 import time

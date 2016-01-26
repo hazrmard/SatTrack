@@ -5,6 +5,7 @@ import re
 from urlparse import urlparse
 import requests
 from lxml import html
+from dateutil import tz, parser
 
 base_N2YO_URL =  'http://www.n2yo.com/satellite/?s=' 
 base_CELESTRAK_URL = 'http://www.celestrak.com/NORAD/elements/'
