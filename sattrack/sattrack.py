@@ -282,11 +282,8 @@ class Motor:
         self.current_pos = angle
 
 
-def store_passes(outpath, n=100, tlepath='fox1.tle'):
-    s = SatTrack()
-    s.set_location()
-    s.load_tle(tlepath)
-    data = s.next_passes(n)
+def store_passes(satellite, outpath, n=100):
+    data = satellite.next_passes(n)
     import csv
     keys = ['risetime', 'riseaz', 'maxtime', 'maxalt', 'settime', 'setaz']
     with open(outpath, 'wb') as output_file:

@@ -6,6 +6,6 @@ setup(
     author="Ibrahim Ahmed",
     description="Track and visualize satellites and control antenna position",
     packages=find_packages(),
-    install_requires=['pyephem', 'lxml', 'pyserial'],
+    install_requires=['pyephem', 'lxml', 'pyserial', 'requests'],
     include_package_data = True,
 )
