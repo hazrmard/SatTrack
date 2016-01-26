@@ -29,3 +29,17 @@ External python dependencies are:
 * [PySerial](https://pypi.python.org/pypi/pyserial)
 
 For illustration the `test()` function in `test.py` contains basic uses of the SatTrack class.
+
+##Usage
+```python
+from sattrack import SatTrack   # Import the `SatTrack` class:
+s = SatTrack()                  # Instantiate class
+s.set_location(lat='0', lon='0', ele=100)   # Set observer location
+s.get_tle('satellite_name')     # Search CELESTRAK or AMSAT for satellite TLE data
+s.load_tle('file_location')     # OR Load TLE from a file
+s.begin_computing()             # Start calculating topocentric coordinates at 1 second intervals
+s.show_location()               # Start printing satellite data to console
+s.visualize()                   # Start a server and visualize satellite on map in browser
+```
+Class functions pertaining to servo motor control are still undergoing testing.  
+For more details, see function definitions in the sourcecode.
