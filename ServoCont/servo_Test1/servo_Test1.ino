@@ -6,6 +6,7 @@ Servo servo2;
 int pos1 = 90;
 int pos2 = 90;
 int counter;
+int angle;
 
 
 int minPulse = 600;
@@ -38,7 +39,9 @@ void loop() {
     {
       Serial.read();
       Serial.println("received");
-      pos1 = int(map(Serial.parseInt(), 0, 360, 50, 140));
+      angle = Serial.parseInt();
+      Serial.println(String(angle));
+      pos1 = int(map(angle, 0, 360, 50, 140));
       Serial.println(String(pos1));
       servo1.write(pos1);
       

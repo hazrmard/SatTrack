@@ -3,7 +3,6 @@ __author__ = 'Ibrahim'
 import ephem
 from datetime import datetime
 import requests
-from lxml import html
 import time
 import threading as th
 import serial
@@ -105,11 +104,9 @@ class SatTrack:
         :param initpos: A touple containing the initial orientation angle for (altitude, azimuth) motors
         """
         servos = ServoController(2, port)
-        self.azmotor, self.altmotor = servos.motors
-        self.altmotor.range[0] = minrange[0]
-        self.azmotor.range[0] = minrange[1]
-        self.altmotor.range[1] = maxrange[0]
-        self.azmotor.range[1] = maxrange[1]
+        self.altmotor, self.azmotor = servos.motors
+        self.altmotor.range = (minrange[0], maxrange[0])
+        self.azmotor.range = (minrange[1], maxrange[1])
         self.altmotor.pos0 = initpos[0]
         self.azmotor.pos0 = initpos[1]
         self.azmotor.initialize()
@@ -273,11 +270,10 @@ class Motor:
     def move(self, angle):
         angle -= self.pos0
         if angle < self.range[0] or angle > self.range[1]:
-            raise ValueError('Angle out of range.')
-        self.port.write(chr(255))
-        self.port.write(chr(self.motor))
-        self.port.write(struct.pack('>h',angle)[0])
-        self.port.write(struct.pack('>h',angle)[1])
+            raise ValueError('Motor ' + str(self.motor) + ' angle out of range:' + str(angle))
+        serial_arg = 's' + str(self.motor) + 'a' + str(angle)
+        self.port.write(serial_arg)
+        print self.port.read(100)
         self.current_pos = angle
 
 

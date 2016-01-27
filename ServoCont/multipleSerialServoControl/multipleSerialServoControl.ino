@@ -75,27 +75,25 @@ void setup()
 } 
 
 void loop() 
+// Serial input is of the format s<motor #>a<angle> e.g
+//s1a45
+//s0a180
 { 
   // Wait for serial input (min 3 bytes in buffer)
-  if (Serial.available() > 3) {
+  if (Serial.available()) {
     // Read the first byte
     startbyte = Serial.read();
-    // If it's really the startbyte (255) ...
-    if (startbyte == 255) {
-      // ... then get the next three bytes
-      for (i=0;i<3;i++) {
-        userInput[i] = Serial.read();
-      }
-      // First byte = servo to move?
-      servo = userInput[0];
-      // Second byte = which position?
-      pos = userInput[1];
-      pos = pos << 8;
-      pos |= userInput[2];
-      // Packet error checking and recovery
-      //if (pos == 255) { servo = 255; }
-
+    if (startbyte == 's') {
+      Serial.println("Received");
+      servo = Serial.parseInt();
+      Serial.print("Servo is: ");
+      Serial.println(String(servo));
+      Serial.read(); //separating character b/w servo and angle
+      pos = Serial.parseInt();
+      Serial.print("Angle is: ");
+      Serial.println(String(pos));
       // Assign new position to appropriate servo
+      
       switch (servo) {
         case 1:
           servo1.write(pos);    // move servo1 to 'pos'
