@@ -77,10 +77,10 @@ void setup()
 void loop() 
 // Serial input is of the format s<motor #>a<angle> e.g
 //s1a45
-//s0a180
+//s2a180
 { 
   // Wait for serial input (min 3 bytes in buffer)
-  if (Serial.available()) {
+  if (Serial.available()>0) {
     // Read the first byte
     startbyte = Serial.read();
     if (startbyte == 's') {
@@ -113,25 +113,17 @@ void loop()
         case 6:
           servo6.write(pos);
           break;
+      }
 
    // TO ADD SERVOS:
    //     case 5:
    //       servo5.write(pos);
    //       break;
    // etc...
-
-        // LED on Pin 13 for digital on/off demo
-        case 99:
-          if (pos == 180) {
-            if (pinState == LOW) { pinState = HIGH; }
-            else { pinState = LOW; }
-          }
-          if (pos == 0) {
-            pinState = LOW;
-          }
-          digitalWrite(ledPin, pinState);
-          break;
-      }
+    }
+    else if (startbyte == 'q') {
+        Serial.println("Ending serial.");
+        Serial.end();
     }
   }
 }

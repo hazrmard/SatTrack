@@ -252,7 +252,7 @@ class ServoController:
             self.serial = serial.Serial(port, baudrade, timeout=timeout)
         except serial.SerialException as e:
             print e.message
-        self.motors = [Motor(i, self.serial) for i in range(motors)]
+        self.motors = [Motor(i, self.serial) for i in range(1, motors+1)]
 
 
 class Motor:

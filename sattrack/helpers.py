@@ -56,7 +56,6 @@ def parse_text_tle(target, baseURL, extensions=('',)):
         url = baseURL + path
         data = requests.get(url)
         match = re.search(pattern, data.text)
-        match
         if match:
             tle1 = match.group(1).strip()
             tle2 = match.group(2).strip()
