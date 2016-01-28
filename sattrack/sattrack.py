@@ -269,6 +269,7 @@ class Motor:
 
     def move(self, angle):
         angle -= self.pos0
+        #angle = abs(angle)
         if angle < self.range[0] or angle > self.range[1]:
             raise ValueError('Motor ' + str(self.motor) + ' angle out of range:' + str(angle))
         serial_arg = 's' + str(self.motor) + 'a' + str(angle)
