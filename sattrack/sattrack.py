@@ -38,6 +38,50 @@ class SatTrack:
         self.observer.elev = ele
         self.observer.epoch = ephem.Date(str(datetime.utcnow()))
         self.observer.date = ephem.Date(str(datetime.utcnow()))
+        
+    def load_tle(self, filename):
+        """
+        loads satellite TLE data from a text file
+        :param filename: path of file
+        """
+        f = open(filename, 'rb')
+        data = f.readlines()
+        f.close()
+        self.satellite = ephem.readtle(data[0], data[1], data[2])
+        self.tle = data
+        self.id = sanitize(data[0])
+        return data
+    
+    def get_tle(self, noradid, destination=None):
+        """
+        parses n2yo.com for satellite's TLE data using its NORAD id.
+        :param noradid: Satellite's NORAD designation
+        :param destination: Place to save the data for later use (optional).
+        """
+        data = parse_text_tle(noradid, AMSAT_URL)
+        if not data:
+            data = parse_text_tle(noradid, base_CELESTRAK_URL, CELESTRAK_paths)
+        if destination is not None:             # write to destination if provided
+            f = open(destination, 'wb')
+            data = [str(noradid)] + data
+            f.writelines(data)
+            f.close()
+        self.satellite = ephem.readtle(noradid, data[0], data[1])
+        self.tle = [str(noradid), data[0], data[1]]
+        self.id = sanitize(str(noradid))
+        return data
+    
+    def begin_computing(self, interval=1.0, trace=0.0, display=False):
+        """
+        Starts a thread that computes satellite's coordinates in real time based on the observer's coordinates.
+        :param interval: Time between computations.
+        :param display: To show a map with the satellite's location.
+        """
+        self.interval = interval
+        t = th.Thread(target=self._update_coords, args=[interval, trace])
+        t.daemon = True
+        self.threads['tracker'] = t
+        t.start()
 
     def _update_coords(self, t, trace):
         """
@@ -57,6 +101,28 @@ class SatTrack:
                 except:
                     self._isActive = False
             time.sleep(t)
+    
+    def visualize(self, openbrowser=True):
+        self.server.add_source(self)
+        self.server.start_server()
+        if openbrowser:
+            url = 'http://' + str(self.server.host) + ':' + str(self.server.port) + '/' + self.id + '/'
+            url = sanitize_url(url)
+            print "opening URL: " + url
+            wb.open(url, new=2)
+    
+    def begin_tracking(self, interval=None):
+        """
+        Begins a thread that sends periodic commands to servo motors.
+        :param interval: Time between commands in seconds.
+        :return:
+        """
+        if interval is None:
+            interval = self.interval
+        t = th.Thread(target=self._update_tracker, args=[interval])
+        t.daemon = True
+        self.threads['motors'] = t
+        t.start()
 
     def _update_tracker(self, t):
         """
@@ -74,26 +140,22 @@ class SatTrack:
                 if abs(alt - self.altmotor.current_pos) >= self.altmotor.resolution:
                     self.altmotor.move(int(alt))
             time.sleep(t)
-
-    def begin_computing(self, interval=1.0, trace=0.0, display=False):
+    
+    def is_trackable(self):
         """
-        Starts a thread that computes satellite's coordinates in real time based on the observer's coordinates.
-        :param interval: Time between computations.
-        :param display: To show a map with the satellite's location.
+        Checks if the satellite's current position can be tracked by the motors (accounting for range and orientation)
         """
-        self.interval = interval
-        t = th.Thread(target=self._update_coords, args=[interval, trace])
-        t.daemon = True
-        self.threads['tracker'] = t
-        t.start()
+        with self.lock:
+            vertically = (to_degs(self.satellite.alt) >= self.altmotor.range[0] + self.altmotor.pos0) and (to_degs(self.satellite.alt) <= self.altmotor.range[1] + self.altmotor.pos0)
+            horizontally = (to_degs(self.satellite.az) >= self.azmotor.range[0] + self.azmotor.pos0) and (to_degs(self.satellite.az) <= self.azmotor.range[1] + self.azmotor.pos0)
+            return vertically and horizontally
 
-    def visualize(self):
-        self.server.add_source(self)
-        self.server.start_server()
-        url = 'http://' + str(self.server.host) + ':' + str(self.server.port) + '/' + self.id + '/'
-        url = sanitize_url(url)
-        print "opening URL: " + url
-        wb.open(url, new=2)
+    def is_observable(self):
+        """
+        Checks if the satellite can be seen above the horizon
+        """
+        with self.lock:
+            return self.satellite.alt >= self.observer.horizon
 
     def connect_servos(self, port=2, minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0)):
         """
@@ -112,47 +174,6 @@ class SatTrack:
         self.azmotor.initialize()
         self.altmotor.initialize()
 
-    def begin_tracking(self, interval=None):
-        """
-        Begins a thread that sends periodic commands to servo motors.
-        :param interval: Time between commands in seconds.
-        :return:
-        """
-        if interval is None:
-            interval = self.interval
-        t = th.Thread(target=self._update_tracker, args=[interval])
-        t.daemon = True
-        self.threads['motors'] = t
-        t.start()
-
-    def is_trackable(self):
-        """
-        Checks if the satellite's current position can be tracked by the motors (accounting for range and orientation)
-        """
-        with self.lock:
-            vertically = (to_degs(self.satellite.alt) >= self.altmotor.range[0] + self.altmotor.pos0) and (to_degs(self.satellite.alt) <= self.altmotor.range[1] + self.altmotor.pos0)
-            horizontally = (to_degs(self.satellite.az) >= self.azmotor.range[0] + self.azmotor.pos0) and (to_degs(self.satellite.az) <= self.azmotor.range[1] + self.azmotor.pos0)
-            return vertically and horizontally
-
-    def is_observable(self):
-        """
-        Checks if the satellite can be seen above the horizon
-        """
-        with self.lock:
-            return self.satellite.alt >= self.observer.horizon
-
-    def load_tle(self, filename):
-        """
-        loads satellite TLE data from a text file
-        :param filename: path of file
-        """
-        f = open(filename, 'rb')
-        data = f.readlines()
-        f.close()
-        self.satellite = ephem.readtle(data[0], data[1], data[2])
-        self.tle = data
-        self.id = sanitize(data[0])
-        return data
 
     def next_pass(self, datestr=None, convert=True):
         """
@@ -199,25 +220,6 @@ class SatTrack:
             result.append(self.next_pass(startdate, convert))
             startdate = str(result[i]['settime'])
         return result
-
-    def get_tle(self, noradid, destination=None):
-        """
-        parses n2yo.com for satellite's TLE data using its NORAD id.
-        :param noradid: Satellite's NORAD designation
-        :param destination: Place to save the data for later use (optional).
-        """
-        data = parse_text_tle(noradid, AMSAT_URL)
-        if not data:
-            data = parse_text_tle(noradid, base_CELESTRAK_URL, CELESTRAK_paths)
-        if destination is not None:             # write to destination if provided
-            f = open(destination, 'wb')
-            data = [str(noradid)] + data
-            f.writelines(data)
-            f.close()
-        self.satellite = ephem.readtle(noradid, data[0], data[1])
-        self.tle = [str(noradid), data[0], data[1]]
-        self.id = sanitize(str(noradid))
-        return data
 
     def show_position(self):
         """
