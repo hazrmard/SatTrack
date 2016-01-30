@@ -162,7 +162,7 @@ class SatTrack:
         with self.lock:
             return self.satellite.alt >= self.observer.horizon
 
-    def connect_servos(self, port=2, minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0)):
+    def connect_servos(self, port=2, motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0)):
         """
         Connects computer to arduino which has a pair of servos connected. Initializes motors to their default positions
         :param port: port name/number e.g 'COM3' on a PC, '/dev/ttyUSB0' on Linux, '/dev/tty.usbserial-FTALLOK2' on Mac
@@ -170,7 +170,7 @@ class SatTrack:
         :param maxrange: A touple containing the maximum angle for (altitude, azimuth) motors
         :param initpos: A touple containing the initial orientation angle for (altitude, azimuth) motors
         """
-        servos = ServoController(2, port)
+        servos = ServoController(port, motors)
         self.altmotor, self.azmotor = servos.motors
         self.altmotor.range = (minrange[0], maxrange[0])
         self.azmotor.range = (minrange[1], maxrange[1])
@@ -268,7 +268,7 @@ class SatTrack:
             
             
 class ServoController:
-    def __init__(self, motors=2, port=2, baudrade=9600, timeout=1):
+    def __init__(self, port=2, motors=(1,2), baudrade=9600, timeout=1):
         self.port = port
         self.baudrate = baudrade
         self.timeout = timeout
@@ -276,7 +276,7 @@ class ServoController:
             self.serial = serial.Serial(port, baudrade, timeout=timeout)
         except serial.SerialException as e:
             print e.message
-        self.motors = [Motor(i, self.serial) for i in range(1, motors+1)]
+        self.motors = [Motor(i, self.serial) for i in motors]
 
 
 class Motor:
