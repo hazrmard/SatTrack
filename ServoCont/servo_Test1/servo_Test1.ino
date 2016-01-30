@@ -16,7 +16,7 @@ void setup() {
 
   Serial.begin(9600);
   servo1.attach(9, minPulse, maxPulse);
-  servo2.attach(5);
+  servo2.attach(3);
   servo1.write(pos1);
   servo2.write(pos2);
 
@@ -35,15 +35,15 @@ void loop() {
   
   if(Serial.available()) {
     
-    while(Serial.peek() == 'O')
+    while(Serial.peek() == 'o')
     {
       Serial.read();
       Serial.println("received");
       angle = Serial.parseInt();
       Serial.println(String(angle));
-      pos1 = int(map(angle, 0, 360, 50, 140));
-      Serial.println(String(pos1));
-      servo1.write(pos1);
+      //pos1 = int(map(angle, 0, 360, 50, 140));
+      //Serial.println(String(pos1));
+      servo1.write(angle);
       
     }
     

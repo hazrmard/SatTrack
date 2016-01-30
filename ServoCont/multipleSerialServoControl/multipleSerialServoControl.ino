@@ -84,13 +84,16 @@ void loop()
     // Read the first byte
     startbyte = Serial.read();
     if (startbyte == 's') {
-      Serial.println("Received");
+      //Serial.println("Received");
       servo = Serial.parseInt();
-      Serial.print("Servo is: ");
-      Serial.println(String(servo));
+      //Serial.print("Servo is: ");
+      //Serial.println(String(servo));
       Serial.read(); //separating character b/w servo and angle
       pos = Serial.parseInt();
-      Serial.print("Angle is: ");
+      //Serial.print("Angle is: ");
+      Serial.print("s");
+      Serial.print(String(servo));
+      Serial.print("a");
       Serial.println(String(pos));
       // Assign new position to appropriate servo
       

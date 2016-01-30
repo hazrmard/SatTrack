@@ -11,6 +11,7 @@ import webbrowser as wb
 import struct
 from .helpers import *
 
+MOTOR_DEBUG_MODE = False
 
 class SatTrack:
     def __init__(self):
@@ -25,6 +26,11 @@ class SatTrack:
         self.altmotor = None
         self.server = Server()
         self.tle = None
+        self.stopTracking = th.Event()
+        self.stopComputing = th.Event()
+        
+        if MOTOR_DEBUG_MODE:
+            print "Debug Mode..."
 
     def set_location(self, lat='36.1486', lon='-86.8050', ele=182):
         """
@@ -69,7 +75,6 @@ class SatTrack:
         self.satellite = ephem.readtle(noradid, data[0], data[1])
         self.tle = [str(noradid), data[0], data[1]]
         self.id = sanitize(str(noradid))
-        return data
     
     def begin_computing(self, interval=1.0, trace=0.0, display=False):
         """
@@ -89,7 +94,7 @@ class SatTrack:
         interval 't'.
         :param t: Interval between computations
         """
-        while True:
+        while not self.stopComputing.isSet():
             with self.lock:
                 try:
                     if trace > 0:
@@ -130,7 +135,7 @@ class SatTrack:
         't' seconds if the change in coordinates is greater than the motors' resolutions.
         :param t: Interval between commands to motors.
         """
-        while True:
+        while not self.stopTracking.isSet():
             with self.lock:
                 az = to_degs(self.satellite.az)
                 alt = to_degs(self.satellite.alt)
@@ -226,13 +231,17 @@ class SatTrack:
         prints satellite's coordinates and relative position periodically.
         """
         i = 0
-        while True:
+        while self._isActive:
             i += 1
             with self.lock:
-                if self._isActive:
-                    print('#' + str(i) + ', Azimuth: ' + str(self.satellite.az) + ', Altitude: ' + str(self.satellite.alt) +
-                          ' Lat: ' + str(self.satellite.sublat) + ' Long: ' + str(self.satellite.sublong) + '\r'),
+                print('#' + str(i) + ', Azimuth: ' + str(self.satellite.az) + ', Altitude: ' + str(self.satellite.alt) +
+                      ' Lat: ' + str(self.satellite.sublat) + ' Lon: ' + str(self.satellite.sublong) + '\r'),
             time.sleep(self.interval)
+    
+    def curr_pos(self):
+        with self.lock:
+            return {'alt': to_degs(self.satellite.alt), 'az': to_degs(self.satellite.az), 'lat': to_degs(self.satellite.sublat), 'lon': to_degs(self.satellite.sublong)}
+            
 
     def write_to_file(self, fname, secs):
         i = 0
@@ -243,8 +252,21 @@ class SatTrack:
                 f.write('#' + str(i) + ' Azimuth: ' + str(self.satellite.az) + ' Altitude: ' + str(self.satellite.alt) + '\n')
             time.sleep(self.interval)
         f.close()
-
-
+    
+    def stop(self):
+        self.stopComputing.set()
+        self.stopTracking.set()
+        try:
+            self.threads['tracker'].join(timeout=self.interval)
+            self.threads['motors'].join(timeout=self.interval)
+            self.stopComputing.clear()
+            self.stopTracking.clear()
+            self._isActive = False
+        except LookupError as e:
+            pass
+        print "stopped"
+            
+            
 class ServoController:
     def __init__(self, motors=2, port=2, baudrade=9600, timeout=1):
         self.port = port
@@ -265,18 +287,23 @@ class Motor:
         self.current_pos = 0
         self.pos0 = 0
         self.port = port
+        self.map = lambda x: x
 
     def initialize(self):
-        self.move(self.range[0])
+        midpoint = (self.range[0] + self.range[1]) / 2
+        self.move(midpoint)
 
     def move(self, angle):
-        angle -= self.pos0
-        #angle = abs(angle)
-        if angle < self.range[0] or angle > self.range[1]:
+        angle = self.map(angle) - self.pos0
+        if MOTOR_DEBUG_MODE:
+            angle = abs(angle)
+        if angle < self.range[0] or angle > self.range[1] and not MOTOR_DEBUG_MODE:
             raise ValueError('Motor ' + str(self.motor) + ' angle out of range:' + str(angle))
         serial_arg = 's' + str(self.motor) + 'a' + str(angle)
         self.port.write(serial_arg)
-        print self.port.read(100)
+        if MOTOR_DEBUG_MODE:
+            print angle
+            print self.port.read(10)
         self.current_pos = angle
 
 
