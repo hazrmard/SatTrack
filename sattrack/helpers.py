@@ -59,7 +59,7 @@ def parse_text_tle(target, baseURL, extensions=('',)):
         if match:
             tle1 = match.group(1).strip()
             tle2 = match.group(2).strip()
-            return (tle1, tle2)
+            return (str(tle1), str(tle2))
         else:
             continue
 

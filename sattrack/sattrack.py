@@ -56,7 +56,6 @@ class SatTrack:
         self.satellite = ephem.readtle(data[0], data[1], data[2])
         self.tle = data
         self.id = sanitize(data[0])
-        return data
     
     def get_tle(self, noradid, destination=None):
         """
@@ -69,8 +68,8 @@ class SatTrack:
             data = parse_text_tle(noradid, base_CELESTRAK_URL, CELESTRAK_paths)
         if destination is not None:             # write to destination if provided
             f = open(destination, 'wb')
-            data = [str(noradid)] + data
-            f.writelines(data)
+            wdata = [str(noradid) + '\n'] + [data[0] + '\n'] + [data[1] + '\n']
+            f.writelines(wdata)
             f.close()
         self.satellite = ephem.readtle(noradid, data[0], data[1])
         self.tle = [str(noradid), data[0], data[1]]
