@@ -70,7 +70,7 @@ The arduino is programmed to control up to 6 servo motors. The pin assignments f
 | 5 | 10 |  
 | 6 | 11 |  
 
-###Connecting SatTrack
+####Connecting SatTrack
 After the satellite TLE data has been retrieved, observer location is set, and position calculations have begun,
 ```python
 # continuing from SatTrack instance 's'
