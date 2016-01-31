@@ -302,7 +302,7 @@ class Motor:
         self.port.write(serial_arg)
         if MOTOR_DEBUG_MODE:
             print angle
-            print self.port.read(10)
+            print self.port.read(10).strip()
         self.current_pos = angle
 
 
