@@ -37,3 +37,7 @@ div {
 #data {
 	margin: 50px;
 }
+
+td {
+    padding: 1em;
+}
