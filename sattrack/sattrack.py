@@ -293,16 +293,16 @@ class Motor:
         self.move(midpoint)
 
     def move(self, angle):
-        angle = self.map(angle) - self.pos0
+        mapped_angle = self.map(angle) - self.pos0
         if MOTOR_DEBUG_MODE:
-            angle = abs(angle)
+            mapped_angle = abs(angle)
         if angle < self.range[0] or angle > self.range[1] and not MOTOR_DEBUG_MODE:
             raise ValueError('Motor ' + str(self.motor) + ' angle out of range:' + str(angle))
-        serial_arg = 's' + str(self.motor) + 'a' + str(angle)
+        serial_arg = 's' + str(self.motor) + 'a' + str(mapped_angle)
         self.port.write(serial_arg)
         if MOTOR_DEBUG_MODE:
-            print angle
-            print self.port.read(10).strip()
+            print mapped_angle
+            #print self.port.read(10).strip()
         self.current_pos = angle
 
 
