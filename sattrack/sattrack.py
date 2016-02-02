@@ -295,7 +295,7 @@ class Motor:
     def move(self, angle):
         mapped_angle = self.map(angle) - self.pos0
         if MOTOR_DEBUG_MODE:
-            mapped_angle = abs(angle)
+            mapped_angle = abs(mapped_angle)
         if angle < self.range[0] or angle > self.range[1] and not MOTOR_DEBUG_MODE:
             raise ValueError('Motor ' + str(self.motor) + ' angle out of range:' + str(angle))
         serial_arg = 's' + str(self.motor) + 'a' + str(mapped_angle)
