@@ -22,7 +22,7 @@ var setVariables = function() {
 	$lat = 0;
 	$az = 0;
 	$alt = 0;
-    $trajectory = [[], []];
+    $trajectory = [];
 	$time = "";
 	$lonlabel = d3.select("#lon");
 	$latlabel = d3.select("#lat");
@@ -39,11 +39,6 @@ var setVariables = function() {
     
     // set up path (to draw map with)
     $path = d3.geo.path()
-        .projection($projection);
-    
-    // set up satellite trajectory path
-    $pathLine = d3.geo.path()  
-        //.interpolate("cardinal") 
         .projection($projection);
     
 }
@@ -99,9 +94,6 @@ var drawSat = function() {
 		.attr("fill", "red")
 		.attr("class", "satellite");
     
-    $svg.append("path")
-        .attr("class", "trajectory")
-        .attr("d", $path);
 }
 
 function getStatus(){
@@ -111,8 +103,6 @@ function getStatus(){
 			$az = parseFloat(data.az);
 			$alt = parseFloat(data.alt);
 			$time = data.time;
-            $trajectory[0].push($lon);
-            $trajectory[1].push($lat);
             
 			$lonlabel.text($lon.toFixed(3));
 			$latlabel.text($lat.toFixed(3));
@@ -132,14 +122,23 @@ function rotateProjection(lat, lon) {
         //$svg.selectAll("path").attr("d", $path);
         $svg.selectAll(".boundary, .land, .graticule, .fill, .stroke, #sphere")
             .attr("d", $path);
+        
+        $svg.selectAll("circle")
+        .data([[0,20],[50,100], [lon, 0], [35, 45], [50, lat]])
+        .enter()
+        .append("circle")
+        .attr("cx", function(d) {
+                   return $projection([d[1], d[0]])[0];
+           })
+           .attr("cy", function(d) {
+                   return $projection([d[1], d[0]])[1];
+           })
+           .attr("r", 5)
+           .style("fill", "yellow")
+           .style("opacity", 0.75)
+           .attr("d", $path);
 }
 
 function plotPoints(lat, lon) {
-	//$svg.selectAll(".satellite")
-	//	.attr("cx", function () { return $projection([lon, lat])[0]; })
-	//	.attr("cy", function () { return $projection([lon, lat])[1]; })	;
-    $svg.selectAll(".trajectory")
-        .datum({type: "LineString", coordinates: $trajectory})
-        .attr("d", $path);
-    console.log($trajectory[0].length);
+	
 }
