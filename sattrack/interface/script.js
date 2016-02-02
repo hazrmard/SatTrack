@@ -22,6 +22,7 @@ var setVariables = function() {
 	$lat = 0;
 	$az = 0;
 	$alt = 0;
+    $trajectory = [[], []];
 	$time = "";
 	$lonlabel = d3.select("#lon");
 	$latlabel = d3.select("#lat");
@@ -31,13 +32,18 @@ var setVariables = function() {
     
     // set up projection as a globe
     $projection = d3.geo.orthographic()
-    .scale($width * 0.459)  // experimentally determined factor
-    .translate([$width / 2, $height / 2])
-    .clipAngle(90)
-    .precision(1);
+        .scale($width * 0.459)  // experimentally determined factor
+        .translate([$width / 2, $height / 2])
+        .clipAngle(90)
+        .precision(1);
     
     // set up path (to draw map with)
     $path = d3.geo.path()
+        .projection($projection);
+    
+    // set up satellite trajectory path
+    $pathLine = d3.geo.path()  
+        //.interpolate("cardinal") 
         .projection($projection);
     
 }
@@ -92,6 +98,10 @@ var drawSat = function() {
 		.attr("r", "8px")
 		.attr("fill", "red")
 		.attr("class", "satellite");
+    
+    $svg.append("path")
+        .attr("class", "trajectory")
+        .attr("d", $path);
 }
 
 function getStatus(){
@@ -101,25 +111,35 @@ function getStatus(){
 			$az = parseFloat(data.az);
 			$alt = parseFloat(data.alt);
 			$time = data.time;
+            $trajectory[0].push($lon);
+            $trajectory[1].push($lat);
+            
 			$lonlabel.text($lon.toFixed(3));
 			$latlabel.text($lat.toFixed(3));
 			$azilabel.text($az.toFixed(3));
 			$altlabel.text($alt.toFixed(3));
 			$timelabel.text($time + " UTC");
-			// console.log(data);
-			rotateProjection($lat, $lon);
-			plotPoints(parseFloat($lat), parseFloat($lon));
+            
+            rotateProjection($lat, $lon);
+            plotPoints($lat, $lon);
+            
 			setTimeout(getStatus, 1000*data.interval);
 	})
 }
 
 function rotateProjection(lat, lon) {
 		$projection.rotate([-lon, -lat]);
-		$svg.selectAll("path").attr("d", $path);
+        //$svg.selectAll("path").attr("d", $path);
+        $svg.selectAll(".boundary, .land, .graticule, .fill, .stroke, #sphere")
+            .attr("d", $path);
 }
 
 function plotPoints(lat, lon) {
-	$svg.selectAll(".satellite")
-		.attr("cx", function () { return $projection([lon, lat])[0]; })
-		.attr("cy", function () { return $projection([lon, lat])[1]; })	;
+	//$svg.selectAll(".satellite")
+	//	.attr("cx", function () { return $projection([lon, lat])[0]; })
+	//	.attr("cy", function () { return $projection([lon, lat])[1]; })	;
+    $svg.selectAll(".trajectory")
+        .datum({type: "LineString", coordinates: $trajectory})
+        .attr("d", $path);
+    console.log($trajectory[0].length);
 }
