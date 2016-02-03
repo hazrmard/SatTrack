@@ -141,5 +141,4 @@ function plotPoints(lat, lon) {
 
 function addTrajectory(lat, lon) {
     $trajectory.push([lon, lat]);
-    }
 }
