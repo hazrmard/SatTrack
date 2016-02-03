@@ -22,8 +22,10 @@ var setVariables = function() {
 	$lat = 0;
 	$az = 0;
 	$alt = 0;
+    $time = "";
+    
     $trajectory = [];
-	$time = "";
+	
 	$lonlabel = d3.select("#lon");
 	$latlabel = d3.select("#lat");
 	$azilabel = d3.select("#azi");
@@ -79,6 +81,11 @@ var drawMap = function() {
 		  .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
 		  .attr("class", "boundary")
 		  .attr("d", $path);
+      
+      $svg.append("path")
+          .datum({type: "LineString", coordinates: $trajectory})
+          .attr("d", $path)
+          .attr("class", "trajectory");
 	});
 
 	d3.select(self.frameElement).style("height", $height + "px");
@@ -104,6 +111,8 @@ function getStatus(){
 			$alt = parseFloat(data.alt);
 			$time = data.time;
             
+            addTrajectory($lat, $lon);
+            
 			$lonlabel.text($lon.toFixed(3));
 			$latlabel.text($lat.toFixed(3));
 			$azilabel.text($az.toFixed(3));
@@ -122,23 +131,15 @@ function rotateProjection(lat, lon) {
         //$svg.selectAll("path").attr("d", $path);
         $svg.selectAll(".boundary, .land, .graticule, .fill, .stroke, #sphere")
             .attr("d", $path);
-        
-        $svg.selectAll("circle")
-        .data([[0,20],[50,100], [lon, 0], [35, 45], [50, lat]])
-        .enter()
-        .append("circle")
-        .attr("cx", function(d) {
-                   return $projection([d[1], d[0]])[0];
-           })
-           .attr("cy", function(d) {
-                   return $projection([d[1], d[0]])[1];
-           })
-           .attr("r", 5)
-           .style("fill", "yellow")
-           .style("opacity", 0.75)
-           .attr("d", $path);
 }
 
 function plotPoints(lat, lon) {
-	
+	$svg.selectAll(".trajectory")
+          .datum({type: "LineString", coordinates: $trajectory})
+          .attr("d", $path);
+}
+
+function addTrajectory(lat, lon) {
+    $trajectory.push([lon, lat]);
+    }
 }
