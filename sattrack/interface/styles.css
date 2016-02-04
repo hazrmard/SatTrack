@@ -8,6 +8,12 @@
   stroke-width: 3px;
 }
 
+.trajectory {
+  fill: none;
+  stroke: red;
+  stroke-width: 5px;
+}
+
 .fill {
   fill: #fff;
 }
@@ -36,4 +42,8 @@ div {
 
 #data {
 	margin: 50px;
+}
+
+td {
+    padding: 1em;
 }
