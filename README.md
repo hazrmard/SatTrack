@@ -61,7 +61,7 @@ Servo control is split into 2 parts: getting coordinates for satellite, and conv
 1. Connect an arduino board via a USB port to the computer. You should know the name of the port e.g. `COM3`.
 2. Load the file `ServoCont/multipleSerialServoControl/multipleSerialServoControl.ino` onto the board.
 3. Quit the arduino IDE to free up USB port control.
-For most servo motors, you will not neet to make any changes to the `.ino` file.
+For most servo motors, you will not need to make any changes to the `.ino` file.
 
 ####Wiring
 Each servo motor is has 3 wire connections:
