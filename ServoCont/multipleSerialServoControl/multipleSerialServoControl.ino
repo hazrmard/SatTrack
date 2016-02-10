@@ -47,8 +47,9 @@ int i;               // iterator
 int ledPin = 13;
 int pinState = LOW;
 
-void setup() 
-{ 
+void linkServos(int from, int to) 
+{
+
   // Attach each Servo object to a digital pin
   servos[0].attach(9, minPulse, maxPulse);
   servos[1].attach(3, minPulse, maxPulse);
@@ -57,6 +58,12 @@ void setup()
   servos[4].attach(10, minPulse, maxPulse);
   servos[5].attach(11, minPulse, maxPulse);
   
+}
+
+void setup() 
+{ 
+  
+  linkServos(minPulse, maxPulse);
 
   // LED on Pin 13 for digital on/off demo
   pinMode(ledPin, OUTPUT);
@@ -101,9 +108,21 @@ void loop()
       }
     }
     
+    else if (startbyte == 'x') {
+      
+      // 'x' begins setup for servos: x<minPulse>_<maxPulse>
+      int from = Serial.parseInt();
+      Serial.read();
+      int to = Serial.parseInt();
+      linkServos(from, to);
+      
+    }
+    
     else if (startbyte == 'q') {    // signal end
+        
         Serial.println("Ending serial.");
         Serial.end();
+        
     }
   }
 }
