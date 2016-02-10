@@ -59,8 +59,8 @@ class SatTrack:
     
     def get_tle(self, noradid, destination=None):
         """
-        parses n2yo.com for satellite's TLE data using its NORAD id.
-        :param noradid: Satellite's NORAD designation
+        parses CELESTRAK and AMSAT for satellite's TLE data using its NORAD id.
+        :param noradid: Satellite's designation
         :param destination: Place to save the data for later use (optional).
         """
         data = parse_text_tle(noradid, AMSAT_URL)
@@ -107,6 +107,11 @@ class SatTrack:
             time.sleep(t)
     
     def visualize(self, openbrowser=True):
+        """
+        Start a local server and visualize satellite position. URL is of the format: http://localhost:8000/<name>/
+        <name> is sanitized by removing any non-alphanumeric characters.
+        :param openbrowser: False -> start server only, True -> start server and open browser.
+        """
         self.server.add_source(self)
         self.server.start_server()
         if openbrowser:
@@ -296,7 +301,7 @@ class Motor:
         mapped_angle = self.map(angle) - self.pos0
         if MOTOR_DEBUG_MODE:
             mapped_angle = abs(mapped_angle)
-        if angle < self.range[0] or angle > self.range[1] and not MOTOR_DEBUG_MODE:
+        if (angle < self.range[0] or angle > self.range[1]) and not MOTOR_DEBUG_MODE:
             raise ValueError('Motor ' + str(self.motor) + ' angle out of range:' + str(angle))
         serial_arg = 's' + str(self.motor) + 'a' + str(mapped_angle)
         self.port.write(serial_arg)
