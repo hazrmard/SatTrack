@@ -18,7 +18,7 @@ def test(tlepath='fox1.tle'):
     s.show_position()
     return s
     
-def test_web(tlepath='fox1.tle'):
+def test_web(tlepath='fox1.tle', host='localhost'):
     s = SatTrack()
     s.set_location()
     s.load_tle(tlepath)
