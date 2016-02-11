@@ -32,7 +32,7 @@ def test_tracking(name='AO-85', port='COM3'):
     s.set_location()
     s.get_tle(name)
     s.begin_computing(interval=1, trace=10)
-    s.connect_servos(port, minrange=(-90, -90), maxrange=(90, 360))
+    s.connect_servos(port, minrange=(0, 0), maxrange=(90, 360), pwm=(900, 2100))
     s.altmotor.map = ALTMAP
     s.azmotor.map = AZMAP
     s.begin_tracking()
