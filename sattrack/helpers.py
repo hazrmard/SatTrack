@@ -73,4 +73,8 @@ def parse_html_tle(baseURL=base_N2YO_URL, extensions=('',), xpath='//div/pre/tex
             data = data[0].rstrip().strip('\r').strip('\n')     # remove \r and \n
             data = data.splitlines()
             return data
+
+
+def read_settings(filepath):
+    f = open(filepath, 'rb')
     
