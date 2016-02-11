@@ -106,14 +106,14 @@ class SatTrack:
                     self._isActive = False
             time.sleep(t)
     
-    def visualize(self, openbrowser=True):
+    def visualize(self, host='localhost', openbrowser=True):
         """
         Start a local server and visualize satellite position. URL is of the format: http://localhost:8000/<name>/
         <name> is sanitized by removing any non-alphanumeric characters.
         :param openbrowser: False -> start server only, True -> start server and open browser.
         """
         self.server.add_source(self)
-        self.server.start_server()
+        self.server.start_server(host)
         if openbrowser:
             url = 'http://' + str(self.server.host) + ':' + str(self.server.port) + '/' + self.id + '/'
             url = sanitize_url(url)
