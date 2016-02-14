@@ -64,6 +64,10 @@ def parse_text_tle(target, baseURL, extensions=('',)):
             continue
 
 
+def read_settings(filepath):
+    f = open(filepath, 'rb')
+    
+
 # def parse_html_tle(baseURL=base_N2YO_URL, extensions=('',), xpath='//div/pre/text()'):
 #        for path in extensions:
 #            url = baseURL + path    
@@ -73,4 +77,4 @@ def parse_text_tle(target, baseURL, extensions=('',)):
 #            data = data[0].rstrip().strip('\r').strip('\n')     # remove \r and \n
 #            data = data.splitlines()
 #            return data
-    
+ 

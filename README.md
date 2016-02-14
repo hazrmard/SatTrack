@@ -39,6 +39,7 @@ External python dependencies are:
 * [lxml](https://pypi.python.org/pypi/lxml/3.5.0)
 * [PySerial](https://pypi.python.org/pypi/pyserial)
 * [Requests](https://pypi.python.org/pypi/requests)
+* [Dateutil](https://pypi.python.org/pypi/python-dateutil)
 
 For illustration the `test()` function in `test.py` contains basic uses of the SatTrack class.
 
