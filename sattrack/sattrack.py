@@ -166,7 +166,7 @@ class SatTrack:
         with self.lock:
             return self.satellite.alt >= self.observer.horizon
 
-    def connect_servos(self, port=2, motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0), mode='a', pwm=(600, 2400)):
+    def connect_servos(self, port=2, motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0), mode='a', pwm=(900, 2100)):
         """
         Connects computer to arduino which has a pair of servos connected. Initializes motors to their default positions
         :param port: port name/number e.g 'COM3' on a PC, '/dev/ttyUSB0' on Linux, '/dev/tty.usbserial-FTALLOK2' on Mac
@@ -276,7 +276,7 @@ class ServoController:
     """
     Interface between SatTrack and individual motors.
     """
-    def __init__(self, port=2, motors=(1,2), mode='a', pwm=(600,2400), baudrade=9600, timeout=1):
+    def __init__(self, port=2, motors=(1,2), mode='a', pwm=(900,2100), baudrade=9600, timeout=1):
         self.portname = port
         self.baudrate = baudrade
         self.timeout = timeout
@@ -288,16 +288,16 @@ class ServoController:
             print e.message
         self.motors = [Motor(i, self.serial, self.pwm, self.mode) for i in motors]
     
-    def setUp()
+    def setUp(self):
         serial_arg = 'x' + str(self.pwm[0]) + '_' + str(self.pwm[1])
         self.serial.write(serial_arg)
 
 
 class Motor:
-    def __init__(self, id, port, pwm=(600, 2400), mode='a'):
+    def __init__(self, id, port, pwm=(900, 2100), mode='a'):
         self.motor = id
         self.resolution = 1
-        self.range = (0, 180)
+        self.range = (0, 360)
         self.current_pos = 0
         self.pos0 = 0
         self.port = port
@@ -310,13 +310,13 @@ class Motor:
         self.move(midpoint)
 
     def move(self, angle):
-    """
-    Checks for out of range angles, maps angle according to to optional Motor.map function, and either writes pulse width
-    or angle to serial port.
-    """
+        """
+        Checks for out of range angles, maps angle according to to optional Motor.map function, and either writes pulse width
+        or angle to serial port.
+        """
         if (angle < self.range[0] or angle > self.range[1]) and not MOTOR_DEBUG_MODE:
             raise ValueError('Motor ' + str(self.motor) + ' angle out of range:' + str(angle))
-        mapped_angle = self.map(angle) - self.pos0
+        mapped_angle = int(self.map(angle) - self.pos0)
         if MOTOR_DEBUG_MODE:
             mapped_angle = abs(mapped_angle)
         serial_arg = 's' + str(self.motor) + self.mode
@@ -331,9 +331,9 @@ class Motor:
         self.current_pos = angle
     
     def _angle_to_pulse(self, angle):
-    """
-    Converts angle linearly to pulse width.
-    """
+        """
+        Converts angle linearly to pulse width.
+        """
         return self.pwm[0] + (self.pwm[1] - self.pwm[0]) * angle / (self.range[1] - self.range[0])
 
 

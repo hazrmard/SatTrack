@@ -51,13 +51,19 @@ void linkServos(int from, int to)
 {
 
   // Attach each Servo object to a digital pin
-  servos[0].attach(9, minPulse, maxPulse);
-  servos[1].attach(3, minPulse, maxPulse);
-  servos[2].attach(4, minPulse, maxPulse);
-  servos[3].attach(5, minPulse, maxPulse);
-  servos[4].attach(10, minPulse, maxPulse);
-  servos[5].attach(11, minPulse, maxPulse);
+  servos[0].attach(9, from, to);
+  servos[1].attach(3, from, to);
+  servos[2].attach(4, from, to);
+  servos[3].attach(5, from, to);
+  servos[4].attach(10, from, to);
+  servos[5].attach(11, from, to);
   
+}
+
+void detachServos(Servo s[]) {
+  for (int i=0; i<6; i++) {
+    s[i].detach();
+  }
 }
 
 void setup() 
@@ -114,7 +120,12 @@ void loop()
       int from = Serial.parseInt();
       Serial.read();
       int to = Serial.parseInt();
+      detachServos(servos);
       linkServos(from, to);
+      Serial.print("Reset: ");
+      Serial.print(String(from));
+      Serial.print(" - ");
+      Serial.println(String(to));
       
     }
     

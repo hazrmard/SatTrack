@@ -7,7 +7,7 @@ sattrack.MOTOR_DEBUG_MODE = True
 
 # Motor specific configuration
 ALTMAP = lambda x: 15 + (105-15) * x / 90      # mapping 0-90 to 20-95
-AZMAP = lambda x: 47 + (143-47) * x / 360     #  mapping 0-360 to 47-143
+AZMAP = lambda x: 140.0 - (140.0/360.0)*x
 
 def test(tlepath='fox1.tle'):
     s = SatTrack()
@@ -32,7 +32,7 @@ def test_tracking(name='AO-85', port='COM3'):
     s.set_location()
     s.get_tle(name)
     s.begin_computing(interval=1, trace=10)
-    s.connect_servos(port, minrange=(0, 0), maxrange=(90, 360), pwm=(900, 2100))
+    s.connect_servos(port, minrange=(0, 0), maxrange=(90, 360), pwm=(900, 2100), mode='a')
     s.altmotor.map = ALTMAP
     s.azmotor.map = AZMAP
     s.begin_tracking()
