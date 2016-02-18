@@ -11,6 +11,17 @@ This code is for my engineering senior design project. The python class SatTrack
 An example of satellite tracking interface:  
 ![image](https://github.com/hazrmard/SatTrack/raw/master/demo.gif)
 
+##Requirements
+
+###Basic
+* Python 2.7
+* A modern web browser (only for visualization)  
+
+###Antenna control
+* Arduino Uno (Board and IDE)
+* 2 x servos
+* 5-7V DC power supply
+
 ## Installation
 1. Download/clone this repository,
 2. In console, change directory to this repository,
@@ -27,6 +38,8 @@ External python dependencies are:
 * [PyEphem](https://pypi.python.org/pypi/pyephem/)
 * [lxml](https://pypi.python.org/pypi/lxml/3.5.0)
 * [PySerial](https://pypi.python.org/pypi/pyserial)
+* [Requests](https://pypi.python.org/pypi/requests)
+* [Dateutil](https://pypi.python.org/pypi/python-dateutil)
 
 For illustration the `test()` function in `test.py` contains basic uses of the SatTrack class.
 
@@ -47,10 +60,10 @@ Check [AMSAT](http://www.amsat.org/amsat/ftp/keps/current/nasa.all) and [CELESTR
 This functionality was added to allow antennas to track a satellite's pass using 2 servo motors. One servo motor controls azimuth and the other controls altitude.  
 Servo control is split into 2 parts: getting coordinates for satellite, and conveying them to servo motors.
 ####Set up
-1. Connect an arduino board via a USB port to the computer.
+1. Connect an arduino board via a USB port to the computer. You should know the name of the port e.g. `COM3`.
 2. Load the file `ServoCont/multipleSerialServoControl/multipleSerialServoControl.ino` onto the board.
 3. Quit the arduino IDE to free up USB port control.
-For most servo motors, you will not neet to make any changes to the `.ino` file.
+For most servo motors, you will not need to make any changes to the `.ino` file.
 
 ####Wiring
 Each servo motor is has 3 wire connections:

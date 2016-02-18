@@ -4,7 +4,7 @@ import ephem
 import re
 from urlparse import urlparse
 import requests
-from lxml import html
+# from lxml import html
 from dateutil import tz, parser
 
 base_N2YO_URL =  'http://www.n2yo.com/satellite/?s=' 
@@ -64,13 +64,17 @@ def parse_text_tle(target, baseURL, extensions=('',)):
             continue
 
 
-def parse_html_tle(baseURL=base_N2YO_URL, extensions=('',), xpath='//div/pre/text()'):
-        for path in extensions:
-            url = baseURL + path    
-            page = requests.get(url)                # getting html data
-            tree = html.fromstring(page.text)       # converting to tree format for parsing
-            data = tree.xpath(xpath)   # remove all newline and whitespace
-            data = data[0].rstrip().strip('\r').strip('\n')     # remove \r and \n
-            data = data.splitlines()
-            return data
+def read_settings(filepath):
+    f = open(filepath, 'rb')
     
+
+# def parse_html_tle(baseURL=base_N2YO_URL, extensions=('',), xpath='//div/pre/text()'):
+#        for path in extensions:
+#            url = baseURL + path    
+#            page = requests.get(url)                # getting html data
+#            tree = html.fromstring(page.text)       # converting to tree format for parsing
+#            data = tree.xpath(xpath)   # remove all newline and whitespace
+#            data = data[0].rstrip().strip('\r').strip('\n')     # remove \r and \n
+#            data = data.splitlines()
+#            return data
+ 

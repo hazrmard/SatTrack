@@ -1,0 +1,9 @@
+Raspberry P:
+
+1) Connecting to Wifi:
+
+Need to modify /etc/wpa_supplicant/wpa_supplicant.conf
+
+2) Python.h not found
+
+Install python-dev: $sudo apt-get install python-dev
