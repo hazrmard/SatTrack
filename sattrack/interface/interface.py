@@ -15,8 +15,8 @@ class Server:
     stop = th.Event()
 
     def __init__(self):
-        self.server_thread = th.Thread(target=self._serve)
-        self.stop = th.Event()
+        #self.server_thread = th.Thread(target=self._serve)
+        #self.stop = th.Event()
         self.host = None
         self.port = None
 
@@ -25,6 +25,7 @@ class Server:
             self.stop_server()
         elif not new and Server.isServing:
             return
+        self.server_thread = th.Thread(target=self._serve)
         Server.server = HTTPServer((host, port), Interface)
         self.serve()
         Server.isServing = True
@@ -33,21 +34,31 @@ class Server:
 
     def add_source(self, src):
         Interface.sources[src.id] = src
+    
+    def remove_source(self, src):
+        try:
+            del Interface.sources[src.id]
+        except KeyError:
+            pass
 
     def serve(self):
-        self.server_thread.daemon = True
         Server.server_thread = self.server_thread
+        Server.server_thread.daemon = True
         Server.server_thread.start()
 
     def _serve(self):
         while not Server.stop.isSet():
             Server.server.handle_request()
+        print 'STOP SERVER SET'
 
     def stop_server(self):
         #Server.server.shutdown()
-        Server.server.server_close()
         Server.stop.set()
+        Server.server.server_close()
         Server.server_thread.join(timeout=1)
+        Server.stop.clear()
+        Server.server_thread = None
+        #print 'Server thread alive? ', Server,server_thread.isAlive()
         Server.isServing = False
         Server.server = None
 
