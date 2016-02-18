@@ -44,10 +44,12 @@ class Server:
             Server.server.handle_request()
 
     def stop_server(self):
+        #Server.server.shutdown()
+        Server.server.server_close()
         Server.stop.set()
         Server.server_thread.join(timeout=1)
-        Server.server.server_close()
         Server.isServing = False
+        Server.server = None
 
 
 class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):

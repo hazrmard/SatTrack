@@ -108,7 +108,8 @@ class SatTrack:
     
     def visualize(self, openbrowser=True):
         self.server.add_source(self)
-        self.server.start_server()
+        if not Server.server:
+            self.server.start_server(host, new=True)
         if openbrowser:
             url = 'http://' + str(self.server.host) + ':' + str(self.server.port) + '/' + self.id + '/'
             url = sanitize_url(url)
