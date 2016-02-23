@@ -18,12 +18,12 @@ def test(tlepath='fox1.tle'):
     s.show_position()
     return s
     
-def test_web(tlepath='fox1.tle'):
+def test_web(tlepath='fox1.tle', host='localhost'):
     s = SatTrack()
     s.set_location()
     s.load_tle(tlepath)
     s.begin_computing(interval=1, trace=10)  # trace > 0 speeds up by a factor of trace / interval (otherwise realtime)
-    s.visualize()
+    s.visualize(openbrowser=False, host=host)
     return s
 
 
