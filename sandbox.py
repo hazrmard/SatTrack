@@ -22,7 +22,7 @@ def test_web(tlepath='fox1.tle', host='localhost'):
     s = SatTrack()
     s.set_location()
     s.load_tle(tlepath)
-    s.begin_computing(interval=1, trace=10)  # trace > 0 speeds up by a factor of trace / interval (otherwise realtime)
+    s.begin_computing(interval=1, trace=1)  # trace > 0 speeds up by a factor of trace / interval (otherwise realtime)
     s.visualize(openbrowser=False, host=host)
     return s
 
@@ -44,10 +44,12 @@ def test_motor(num, interval):
     servos = ServoController(port='COM3', motors=(1,2))
     print 'setting up controller'
     servos.setUp()
-    time.sleep(interval)
+    time.sleep(interval*3)
     altmotor, azmotor = servos.motors
     altmotor.map = ALTMAP      # mapping 0-90 to 20-95
     azmotor.map = AZMAP
+    azmotor.initialize()
+    altmotor.initialize()
     print 'starting movement'
     for i in range(0, 91):
         if num==1:

@@ -166,7 +166,7 @@ class SatTrack:
         with self.lock:
             return self.satellite.alt >= self.observer.horizon
 
-    def connect_servos(self, port=2, motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0), mode='a', pwm=(900, 2100)):
+    def connect_servos(self, port=2, motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0), mode='a', pwm=(900, 2100), map=(lambda x: x, lambda x: x), timeout=1):
         """
         Connects computer to arduino which has a pair of servos connected. Initializes motors to their default positions
         :param port: port name/number e.g 'COM3' on a PC, '/dev/ttyUSB0' on Linux, '/dev/tty.usbserial-FTALLOK2' on Mac
@@ -174,14 +174,17 @@ class SatTrack:
         :param maxrange: A touple containing the maximum angle for (altitude, azimuth) motors
         :param initpos: A touple containing the initial orientation angle for (altitude, azimuth) motors
         """
-        servos = ServoController(port, motors, mode, pwm)
+        servos = ServoController(port=port, motors=motors, mode=mode, pwm=pwm, timeout=timeout)
+        time.sleep(timeout * 2)      # interval needed to let arduino finish starting up    
+        servos.setUp()                  # apply PWM values
         self.altmotor, self.azmotor = servos.motors
         self.altmotor.range = (minrange[0], maxrange[0])
         self.azmotor.range = (minrange[1], maxrange[1])
         self.altmotor.pos0 = initpos[0]
         self.azmotor.pos0 = initpos[1]
-        servos.setUp()                  # apply PWM values
-        self.azmotor.initialize()      # move to midpoint positions
+        self.altmotor.map = map[0]
+        self.azmotor.map = map[1]
+        self.azmotor.initialize()      # move to starting positions
         self.altmotor.initialize()
 
 
@@ -276,7 +279,7 @@ class ServoController:
     """
     Interface between SatTrack and individual motors.
     """
-    def __init__(self, port=2, motors=(1,2), mode='a', pwm=(900,2100), baudrade=9600, timeout=1):
+    def __init__(self, port='2', motors=(1,2), mode='a', pwm=(900,2100), baudrade=9600, timeout=1):
         self.portname = port
         self.baudrate = baudrade
         self.timeout = timeout
@@ -291,6 +294,7 @@ class ServoController:
     def setUp(self):
         serial_arg = 'x' + str(self.pwm[0]) + '_' + str(self.pwm[1])
         self.serial.write(serial_arg)
+        print self.serial.readline().strip()
 
 
 class Motor:
@@ -306,8 +310,8 @@ class Motor:
         self.mode = mode
 
     def initialize(self):
-        midpoint = (self.range[0] + self.range[1]) / 2
-        self.move(midpoint)
+        #midpoint = (self.range[0] + self.range[1]) / 2
+        self.move(self.range[0])
 
     def move(self, angle):
         """
@@ -316,9 +320,9 @@ class Motor:
         """
         if (angle < self.range[0] or angle > self.range[1]) and not MOTOR_DEBUG_MODE:
             raise ValueError('Motor ' + str(self.motor) + ' angle out of range:' + str(angle))
+        angle = abs(angle) if MOTOR_DEBUG_MODE else angle
         mapped_angle = int(self.map(angle) - self.pos0)
-        if MOTOR_DEBUG_MODE:
-            mapped_angle = abs(mapped_angle)
+        mapped_angle = abs(mapped_angle) if MOTOR_DEBUG_MODE else mapped_angle
         serial_arg = 's' + str(self.motor) + self.mode
         if self.mode == 'a':
             serial_arg += str(mapped_angle)
@@ -327,7 +331,7 @@ class Motor:
             serialarg += str(pulse)
         self.port.write(serial_arg)
         if MOTOR_DEBUG_MODE:
-            print self.port.read(10).strip()
+            print angle, self.port.readline().strip()
         self.current_pos = angle
     
     def _angle_to_pulse(self, angle):

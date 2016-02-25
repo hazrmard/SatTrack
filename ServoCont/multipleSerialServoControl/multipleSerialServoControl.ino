@@ -122,9 +122,9 @@ void loop()
       int to = Serial.parseInt();
       detachServos(servos);
       linkServos(from, to);
-      Serial.print("Reset: ");
+      Serial.print("Reset:");
       Serial.print(String(from));
-      Serial.print(" - ");
+      Serial.print("-");
       Serial.println(String(to));
       
     }
