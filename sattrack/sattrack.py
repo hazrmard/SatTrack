@@ -261,17 +261,27 @@ class SatTrack:
             time.sleep(self.interval)
         f.close()
     
-    def stop(self):
-        self.stopComputing.set()
+    def stop_tracking(self):
         self.stopTracking.set()
         try:
-            self.threads['tracker'].join(timeout=self.interval)
             self.threads['motors'].join(timeout=self.interval)
-            self.stopComputing.clear()
-            self.stopTracking.clear()
-            self._isActive = False
+            self.threads['motors'] = None
         except LookupError as e:
             pass
+        self.stopTracking.clear()
+    
+    def stop_computing(self):
+        self.stopComputing.set()
+        try:
+            self.threads['tracker'].join(timeout=self.interval)
+            self.threads['tracker'] = None
+        except LookupError as e:
+            pass
+        self.stopComputing.clear()
+    
+    def stop(self):
+        self.stop_computing()
+        self.stop_tracking()
         print "stopped"
             
             
