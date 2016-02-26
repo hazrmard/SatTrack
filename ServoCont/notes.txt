@@ -1,0 +1,5 @@
+AZIMUTH SERVO:
+
+> PWM 900-2100 us
+> 100 us --> 40 degrees consistently
+> 

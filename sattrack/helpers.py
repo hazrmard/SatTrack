@@ -4,7 +4,6 @@ import ephem
 import re
 from urlparse import urlparse
 import requests
-# from lxml import html
 from dateutil import tz, parser
 
 base_N2YO_URL =  'http://www.n2yo.com/satellite/?s=' 
@@ -77,4 +76,3 @@ def read_settings(filepath):
 #            data = data[0].rstrip().strip('\r').strip('\n')     # remove \r and \n
 #            data = data.splitlines()
 #            return data
- 
