@@ -98,7 +98,7 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps(self.genJSON(source)))
+                self.wfile.write(self.genJSON(source))
             else:
                 self.send_response(400, 'Source not found.')
             return      # quit after returning json
@@ -153,7 +153,7 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
         d['alt'] = to_degs(source.satellite.alt)
         d['interval'] = source.interval
         d['time'] = str(source.observer.date)
-        return d
+        return json.dumps(d)
 
     def log_message(self, format, *args):   # override to silence console output
         return None

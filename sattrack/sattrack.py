@@ -10,6 +10,7 @@ from interface import *
 import webbrowser as wb
 import struct
 from .helpers import *
+from collections import deque
 
 MOTOR_DEBUG_MODE = False
 
@@ -28,6 +29,7 @@ class SatTrack:
         self.tle = None
         self.stopTracking = th.Event()
         self.stopComputing = th.Event()
+        self.log = ['SatTrack initialized.']
         
         if MOTOR_DEBUG_MODE:
             print "Debug Mode..."
@@ -44,6 +46,7 @@ class SatTrack:
         self.observer.elev = ele
         self.observer.epoch = ephem.Date(str(datetime.utcnow()))
         self.observer.date = ephem.Date(str(datetime.utcnow()))
+        self.put_log('Location ' + lat + 'N; ' + lon + 'E; ' + str(ele) + 'm elevation.')
         
     def load_tle(self, filename):
         """
@@ -56,6 +59,7 @@ class SatTrack:
         self.satellite = ephem.readtle(data[0], data[1], data[2])
         self.tle = data
         self.id = sanitize(data[0])
+        self.put_log('Loaded TLE from: ' + filename)
     
     def get_tle(self, noradid, destination=None):
         """
@@ -74,6 +78,7 @@ class SatTrack:
         self.satellite = ephem.readtle(noradid, data[0], data[1])
         self.tle = [str(noradid), data[0], data[1]]
         self.id = sanitize(str(noradid))
+        self.put_log('Found ID: ' + str(noradid))
     
     def begin_computing(self, interval=1.0, trace=0.0, display=False):
         """
@@ -86,6 +91,7 @@ class SatTrack:
         t.daemon = True
         self.threads['tracker'] = t
         t.start()
+        self.put_log('Began computing at interval: ' + str(interval) + 's and trace: ' + str(trace) + 's.')
 
     def _update_coords(self, t, trace):
         """
@@ -122,6 +128,7 @@ class SatTrack:
             url = sanitize_url(url)
             print "opening URL: " + url
             wb.open(url, new=2)
+        self.put_log('Started server at: ' + host)
     
     def begin_tracking(self, interval=None):
         """
@@ -135,6 +142,7 @@ class SatTrack:
         t.daemon = True
         self.threads['motors'] = t
         t.start()
+        self.put_log('Started tracking.')
 
     def _update_tracker(self, t):
         """
@@ -189,7 +197,7 @@ class SatTrack:
         self.azmotor.map = map[1]
         self.azmotor.initialize()      # move to starting positions
         self.altmotor.initialize()
-
+        self.put_log('Connected to serial port: ' + str(port) + ' on motors: ' + str(motors[0]) + ' ,' + str(motors[1]) + '.')
 
     def next_pass(self, datestr=None, convert=True):
         """
@@ -263,6 +271,17 @@ class SatTrack:
                 f.write('#' + str(i) + ' Azimuth: ' + str(self.satellite.az) + ' Altitude: ' + str(self.satellite.alt) + '\n')
             time.sleep(self.interval)
         f.close()
+        
+    def put_log(self, text):
+        """Enqueue text to instance log. It can later be dequeued by the interface class to display to the user.
+        :text Whatever that it is to be logged. String type.
+        """
+        self.log.append(str(text))
+    
+    def get_log(self):
+        log = self.log
+        self.log = []
+        return log
     
     def stop_tracking(self):
         self.stopTracking.set()
