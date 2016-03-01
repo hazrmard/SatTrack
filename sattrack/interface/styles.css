@@ -40,6 +40,10 @@ div {
 	vertical-align: top;
 }
 
+.log {
+    overflow-y:auto;
+}
+
 #data {
 	margin: 50px;
 }
