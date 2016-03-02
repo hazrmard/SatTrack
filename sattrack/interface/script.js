@@ -3,6 +3,7 @@
 	setVariables()	
 	drawMap();
     drawSat();
+    setClickListeners();
 	getStatus();
 });
 
@@ -23,7 +24,9 @@ var setVariables = function() {
 	$az = 0;
 	$alt = 0;
     $time = "";
-    $log = d3.select("#log");
+    $log = $("#log");
+    
+    $stop_flag = false;
     
     $trajectory = [];
 	
@@ -44,6 +47,31 @@ var setVariables = function() {
     $path = d3.geo.path()
         .projection($projection);
     
+}
+
+function setClickListeners() {
+    $("#startcomputing").click(function() {
+        $.get(window.location.href + "?startcomputing")
+            .success(function() {
+                $stop_flag = false;
+            });
+    });
+    
+    $("#stopcomputing").click(function() {
+        $trajectory = [];
+        $.get(window.location.href + "?stopcomputing")
+            .success(function() {
+                $stop_flag = true;
+            });
+    });
+    
+    $("#starttracking").click(function() {
+        $.get(window.location.href + "?starttracking");
+    });
+    
+    $("#stoptracking").click(function() {
+        $.get(window.location.href + "?stoptracking");
+    });
 }
 
 var drawMap = function() {
@@ -125,7 +153,13 @@ function getStatus(){
             plotPoints($lat, $lon);
             
 			setTimeout(getStatus, 1000*data.interval);
-	})
+	}).fail(function() {
+        setTimeout(getStatus, 2000);
+        $trajectory = [];
+        if (!$stop_flag) {
+            appendLog(["Server connection failed. Retrying in 2s."]);
+        }
+    });
 }
 
 function rotateProjection(lat, lon) {
@@ -147,7 +181,7 @@ function addTrajectory(lat, lon) {
 
 function appendLog(log) {
     for (i=0; i<log.length; i++) {
-        $log.append("p" )
-                .text(log[i]);
+        $log.append("<p>" + log[i] + "</p>" );
     }
+    $log.scrollTop($log.prop("scrollHeight"));
 }

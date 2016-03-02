@@ -20,6 +20,8 @@ class SatTrack:
         self.observer = ephem.Observer()
         self.satellite = None
         self.threads = {}
+        self.threads['tracker'] = None
+        self.threads['motors'] = None
         self.lock = th.Lock()
         self.interval = 1
         self._isActive = False
@@ -29,6 +31,8 @@ class SatTrack:
         self.tle = None
         self.stopTracking = th.Event()
         self.stopComputing = th.Event()
+        self.current_config = {'interval':1, 'trace':0, 'port':'2', 'motors':(1,2), 'pwm':(900,2100), 'minrange':(0,0), \
+                                        'maxrange':(90,360)}
         self.log = ['SatTrack initialized.']
         
         if MOTOR_DEBUG_MODE:
@@ -86,6 +90,15 @@ class SatTrack:
         :param interval: Time between computations.
         :param display: To show a map with the satellite's location.
         """
+        if self.threads['tracker']:
+            self.put_log("Already computing.")
+            print 'Already computing'
+            return
+            
+        self.current_config['interval'] = interval
+        self.current_config['trace'] = trace
+        
+        self.server.add_source(self)
         self.interval = interval
         t = th.Thread(target=self._update_coords, args=[interval, trace])
         t.daemon = True
@@ -118,7 +131,6 @@ class SatTrack:
         <name> is sanitized by removing any non-alphanumeric characters.
         :param openbrowser: False -> start server only, True -> start server and open browser.
         """
-        self.server.add_source(self)
         self.server.host = host
         self.server.port = port
         if not Server.server:
@@ -177,7 +189,7 @@ class SatTrack:
         with self.lock:
             return self.satellite.alt >= self.observer.horizon
 
-    def connect_servos(self, port=2, motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0), mode='a', pwm=(900, 2100), map=(lambda x: x, lambda x: x), timeout=1):
+    def connect_servos(self, port='2', motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0), mode='a', pwm=(900, 2100), map=(lambda x: x, lambda x: x), timeout=1):
         """
         Connects computer to arduino which has a pair of servos connected. Initializes motors to their default positions
         :param port: port name/number e.g 'COM3' on a PC, '/dev/ttyUSB0' on Linux, '/dev/tty.usbserial-FTALLOK2' on Mac
@@ -285,28 +297,32 @@ class SatTrack:
     
     def stop_tracking(self):
         self.stopTracking.set()
-        self.server.remove_source(self)
         try:
             self.threads['motors'].join(timeout=self.interval)
             self.threads['motors'] = None
-        except LookupError as e:
-            pass
+            self.put_log("Stopped tracking.")
+        except (AttributeError, LookupError) as e:
+            self.put_log("Not tracking anything.")
         self.stopTracking.clear()
-        self.put_log("Stopped tracking.")
     
     def stop_computing(self):
         self.stopComputing.set()
         try:
             self.threads['tracker'].join(timeout=self.interval)
             self.threads['tracker'] = None
-        except LookupError as e:
-            pass
+            self.put_log("Stopped computing.")
+        except (AttributeError, LookupError) as e:
+            self.put_log("Not computing anything.")
         self.stopComputing.clear()
-        self.put_log("Stopped computing.")
     
     def stop(self):
         self.stop_computing()
         self.stop_tracking()
+        self.server.remove_source(self)
+        try:
+            self.altmotor.port.close()
+        except:
+            pass
         print "stopped"
             
             

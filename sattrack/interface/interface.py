@@ -93,12 +93,23 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
             else:
                 self.send_response(400, 'File not found: ' + parsed['staticfile'])
                 return
-        if parsed['query']:                             # handle any queries
+        if parsed['query'] and source:                             # handle any queries
             if parsed['query'] == u'status' and source:
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(self.genJSON(source))
+            elif parsed['query'] == u'stopcomputing':
+                self.send_response(200)
+                source.stop_computing()
+            elif parsed['query'] == u'stoptracking':
+                self.send_response(200)
+                source.stop_tracking()
+            elif parsed['query'] == u'startcomputing':
+                self.send_response(200)
+                source.begin_computing(interval=source.current_config['interval'], trace=source.current_config['trace'])
+            elif parsed['query'] == u'starttracking':
+                source.begin_tracking()
             else:
                 self.send_response(400, 'Source not found.')
             return      # quit after returning json
