@@ -8,12 +8,12 @@
 
 var setVariables = function() {
     // get the smaller of width/height as the map dimension
-    $width = $(window).height() < $(window).width() ? $(window).height() : $(window).width();
+    $width = window.outerHeight < window.innerWidth ? 0.45 * window.innerWidth : 0.9 * window.innerWidth;
     $height = $width;
-    console.log($width)
+    if (window.outerHeight > window.innerWidth) {d3.select(".ui").attr("width", "100%");}
     
     // append svg to document to draw on
-    $svg = d3.select("#svg").append("svg")
+    $svg = d3.select(".svg").append("svg")
     .attr("width", $width)
     .attr("height", $height);
     
@@ -23,6 +23,7 @@ var setVariables = function() {
 	$az = 0;
 	$alt = 0;
     $time = "";
+    $log = d3.select("#log");
     
     $trajectory = [];
 	
@@ -112,6 +113,7 @@ function getStatus(){
 			$time = data.time;
             
             addTrajectory($lat, $lon);
+            appendLog(data.log);
             
 			$lonlabel.text($lon.toFixed(3));
 			$latlabel.text($lat.toFixed(3));
@@ -141,4 +143,11 @@ function plotPoints(lat, lon) {
 
 function addTrajectory(lat, lon) {
     $trajectory.push([lon, lat]);
+}
+
+function appendLog(log) {
+    for (i=0; i<log.length; i++) {
+        $log.append("p" )
+                .text(log[i]);
+    }
 }

@@ -14,16 +14,15 @@
 </head>
 
 <body>
-    <div class="container">
-    <table>
-    <tr>
-        <td>
-            <div id="svg">
-            </div>
-        </td>
+    <div class="container-fluid">
+    
         
-        <td>
-            <div class="ui">
+            <div class="svg inline">
+            </div>
+        
+        
+        
+            <div class="ui inline">
                 <div id="data">
                     <table id="data-table" class="table table-bordered">
                         <tr>
@@ -49,22 +48,20 @@
                     </table>
                 </div>
                 
-                <div id="commands">
-                    <div class="btn-group btn-group-large">
-                      <button type="button" class="btn btn-primary">Start Computing</button>
-                      <button type="button" class="btn btn-danger">Stop Computing</button>
-                      <button type="button" class="btn btn-primary">Start Tracking</button>
-                      <button type="button" class="btn btn-danger">Stop Tracking</button>
+                <div id="commands" class="padded-vertical">
+                    <div class="">
+                      <button type="button" class="btn btn-sm btn-primary">Start Computing</button>
+                      <button type="button" class="btn btn-sm btn-danger">Stop Computing</button>
+                      <button type="button" class="btn btn-sm btn-primary">Start Tracking</button>
+                      <button type="button" class="btn btn-sm btn-danger">Stop Tracking</button>
                     </div>                
                 </div>
                 
-                <div id="log">
+                <div id="log" class="padded-vertical padded-horizontal">
                 </div>
                 
             </div>
-        </td>
-    </tr>
-    </table>
+        
     </div>
     
 </body>

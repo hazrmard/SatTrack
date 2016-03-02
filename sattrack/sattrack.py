@@ -292,6 +292,7 @@ class SatTrack:
         except LookupError as e:
             pass
         self.stopTracking.clear()
+        self.put_log("Stopped tracking.")
     
     def stop_computing(self):
         self.stopComputing.set()
@@ -301,6 +302,7 @@ class SatTrack:
         except LookupError as e:
             pass
         self.stopComputing.clear()
+        self.put_log("Stopped computing.")
     
     def stop(self):
         self.stop_computing()

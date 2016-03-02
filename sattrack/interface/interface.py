@@ -153,6 +153,7 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
         d['alt'] = to_degs(source.satellite.alt)
         d['interval'] = source.interval
         d['time'] = str(source.observer.date)
+        d['log'] = source.get_log()
         return json.dumps(d)
 
     def log_message(self, format, *args):   # override to silence console output
