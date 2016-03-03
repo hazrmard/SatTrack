@@ -9,7 +9,7 @@ This code is for my engineering senior design project. The python class SatTrack
 * Visualize satellite position using a web interface implemented in D3js
 
 An example of satellite tracking interface:  
-![image](https://github.com/hazrmard/SatTrack/raw/master/demo.gif)
+![image](https://github.com/hazrmard/SatTrack/raw/interface_cleanup/demo.gif)
 
 ##Requirements
 
