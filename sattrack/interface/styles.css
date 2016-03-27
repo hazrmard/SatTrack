@@ -35,12 +35,26 @@
   stroke-width: .5px;
 }
 
+.main {
+    text-align: center;
+}
 .inline {
 	display: inline-block;
 	vertical-align: top;
 }
+.ui, .svg {
+    margin: 0px;
+    padding: 1em;
+}
+.btn-collection {
+    display: table-cell;
+}
+.btn-collection * {
+    margin-top: 0.5em;
+}
 
 #log {
+    text-align: left;
     overflow-y:auto;
     width: 100%;
     height: 30vh;
@@ -60,5 +74,5 @@ td, .padded-vertical {
 
 .padded-horizontal {
     padding-left: 1em;
-    padding-right: 1 em;
+    padding-right: 1em;
 }

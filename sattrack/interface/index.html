@@ -3,6 +3,7 @@
 <html>
 
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>SatTrack</title>
 	<link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
@@ -14,14 +15,15 @@
 </head>
 
 <body>
-    <div class="container-fluid">
-    
-        
+    <div class="main container-fluid">
+
+
             <div class="svg inline">
+				<!-- SVG map element goes here at runtime -->
             </div>
-        
-        
-        
+
+
+
             <div class="ui inline">
                 <div id="data">
                     <table id="data-table" class="table table-bordered">
@@ -47,26 +49,26 @@
                         </tr>
                     </table>
                 </div>
-                
+
                 <div id="config" class="padded-vertical">
                 </div>
-                
+
                 <div id="commands" class="padded-vertical">
-                    <div class="">
+                    <div class="btn-collection">
                       <button id="startcomputing" type="button" class="btn btn-sm btn-primary">Start Computing</button>
                       <button id="stopcomputing" type="button" class="btn btn-sm btn-danger">Stop Computing</button>
                       <button id="starttrackng" type="button" class="btn btn-sm btn-primary">Start Tracking</button>
                       <button id="stoptracking" type="button" class="btn btn-sm btn-danger">Stop Tracking</button>
-                    </div>                
+                    </div>
                 </div>
-                
+
                 <div id="log" class="padded-vertical padded-horizontal">
                 </div>
-                
+
             </div>
-        
+
     </div>
-    
+
 </body>
 
 </html>
