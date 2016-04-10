@@ -7,3 +7,8 @@ Need to modify /etc/wpa_supplicant/wpa_supplicant.conf
 2) Python.h not found
 
 Install python-dev: $sudo apt-get install python-dev
+
+3) GNURadio GTk Warning
+
+Install xauth
+change /etc/ssh/sshd_config -> X11UseLocalhost no

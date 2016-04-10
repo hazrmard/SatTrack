@@ -34,7 +34,7 @@ class Server:
 
     def add_source(self, src):
         Interface.sources[src.id] = src
-    
+
     def remove_source(self, src):
         try:
             del Interface.sources[src.id]
@@ -79,7 +79,7 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
         #print parsed
         #print '\noriginal path: ' + self.path + '\n'
         if self.path == '/':                            # i.e. localhost:port_number/
-            self.path = localpath
+            self.path = localpath + 'dashboard.html'
             #print '\npath modified to: ' + self.path
         if parsed['id']:                                # i.e. localhost:port_number/valid_id/
             if parsed['id'] in Interface.sources:
@@ -109,7 +109,7 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 self.send_response(200)
                 source.begin_computing(interval=source.current_config['interval'], trace=source.current_config['trace'])
             elif parsed['query'] == u'starttracking':
-                source.begin_tracking()
+                source.begin_tracking(interval=source.current_config['interval'])
             else:
                 self.send_response(400, 'Source not found.')
             return      # quit after returning json
@@ -136,7 +136,7 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
             #print self.path
         elif len(path) > 0:
             if path[-2] == 'interface' and path[-1] in os.listdir(os.path.dirname(__file__)):   # path given is an actual file
-                #print 'requesting file ' + self.path 
+                #print 'requesting file ' + self.path
                 self.path = os.path.dirname(__file__) + '/' + unicode(path[-1])   # set path to the file
             else:   # path is not a file and is not empty -> should be SATELLITE_ID
                 # print 'SAT ID provided in URL:', path[0]
@@ -183,5 +183,3 @@ def debug():
     print os.path.dirname(__file__)
     print os.listdir(os.path.dirname(__file__))
     print __file__
-
-
