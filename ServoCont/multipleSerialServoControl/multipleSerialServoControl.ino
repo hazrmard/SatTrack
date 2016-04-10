@@ -32,8 +32,8 @@
 Servo servos[6];
 
 // Common servo setup values
-int minPulse = 600;   // minimum servo position, us (microseconds)
-int maxPulse = 2400;  // maximum servo position, us
+int minPulse = 900;   // minimum servo position, us (microseconds)
+int maxPulse = 2100;  // maximum servo position, us
 
 // User input for servo and position
 int userInput[4];    // raw input from serial buffer, 4 bytes

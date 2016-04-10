@@ -20,9 +20,17 @@ def altmap2(x):
     else:
         return 175. - x*(135./90.)
 
+def altmap3(x):
+    if x >= 90:
+        return 180
+    elif x<=0:
+        return 60
+    else:
+        return 60. + (120./(90.))*(x+0.)
+
 ALTRANGE = (0,90)
 AZRANGE = (0, 360)
-ALTMAP = altmap2
+ALTMAP = altmap3
 AZMAP = lambda x: 140.0 - (140.0/360.0)*x
 INTERVAL = 1
 MOTORS = (1,2)
@@ -54,8 +62,27 @@ def main():
     s.connect_servos(port=PORT, minrange=(ALTRANGE[0], AZRANGE[0]), maxrange=(ALTRANGE[1], AZRANGE[1]), \
                                 pwm=PWM, map=(ALTMAP, AZMAP), timeout=TIMEOUT)
     print 'Test angle mapping: '
-    print 'az.map(0):' + str(s.azmotor.map(0)), 'az.map(360):' + str(s.azmotor.map(360))
-    print 'alt.map(0): ' + str(s.altmotor.map(0)), 'alt.map(90): ' + str(s.altmotor.map(90))
+    print 'az.map(0):' + str(s.azmotor.map(0)), '\taz.map(360):' + str(s.azmotor.map(360))
+    print 'alt.map(0): ' + str(s.altmotor.map(0)), '\talt.map(90): ' + str(s.altmotor.map(90))
+
+    i = raw_input('Test calibration?[y/n]   ')
+    if i=='y':
+        print 'Moving azimuth to ' + str(AZRANGE[1])
+        s.azmotor.move(AZRANGE[1])
+        _ = raw_input('Press return to continue...');
+
+        print 'Moving azimuth to ' + str(AZRANGE[0])
+        s.azmotor.move(AZRANGE[0])
+        _ = raw_input('Press return to continue...');
+
+        print 'Moving altitude to ' + str(ALTRANGE[1])
+        s.altmotor.move(ALTRANGE[1])
+        _ = raw_input('Press return to continue...');
+
+        print 'Moving altitude to ' + str(ALTRANGE[0])
+        s.altmotor.move(ALTRANGE[0])
+        _ = raw_input('Press return to continue...');
+
     print 'Finished connecting servos. Angle mapping complete.'
 
     i='n'
