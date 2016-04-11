@@ -98,12 +98,12 @@ class SatTrack:
         self.current_config['interval'] = interval
         self.current_config['trace'] = trace
         
-        self.server.add_source(self)
         self.interval = interval
         t = th.Thread(target=self._update_coords, args=[interval, trace])
         t.daemon = True
         self.threads['tracker'] = t
         t.start()
+        self.server.add_source(self)
         self.put_log('Began computing at interval: ' + str(interval) + 's and trace: ' + str(trace) + 's.')
 
     def _update_coords(self, t, trace):
@@ -121,7 +121,8 @@ class SatTrack:
                         self.observer.date = ephem.Date(str(datetime.utcnow()))
                     self.satellite.compute(self.observer)
                     self._isActive = True
-                except:
+                except Exception as e:
+                    print e
                     self._isActive = False
             time.sleep(t)
     

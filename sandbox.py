@@ -16,8 +16,8 @@ def test(tlepath='fox1.tle'):
     s.begin_computing(interval=1, trace=0)  # trace > 0 speeds up by a factor of trace / interval (otherwise realtime)
     s.show_position()
     return s
-    
-def test_web(trace=0, tlepath='fox1.tle', host='localhost'):
+
+def test_web(trace=0, tlepath='AO-85.tle', host='localhost'):
     s = SatTrack()
     s.set_location()
     s.load_tle(tlepath)
@@ -59,7 +59,7 @@ def test_motor(num, interval):
         time.sleep(interval)
     print 'finished'
 # Azimuth motor has limits (47->143) => (-90->270)
-    
+
 
 def q(s=None):
     if s:
