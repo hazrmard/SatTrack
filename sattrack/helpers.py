@@ -6,9 +6,9 @@ from urlparse import urlparse
 import requests
 from dateutil import tz, parser
 
-base_N2YO_URL =  'http://www.n2yo.com/satellite/?s=' 
+base_N2YO_URL =  'http://www.n2yo.com/satellite/?s='
 base_CELESTRAK_URL = 'http://www.celestrak.com/NORAD/elements/'
-CELESTRAK_paths = ('weather.txt', 'noaa.txt', 'goes.txt', 'resource.txt', 'sarsat.txt.', 'dmc.txt', 'tdrss.txt', 'argos.txt', 'geo.txt', 
+CELESTRAK_paths = ('weather.txt', 'noaa.txt', 'goes.txt', 'resource.txt', 'sarsat.txt.', 'dmc.txt', 'tdrss.txt', 'argos.txt', 'geo.txt',
                                 'intelsat.txt', 'gorizont.txt', 'raduga.txt', 'molniya.txt', 'iridium.txt', 'orbcomm.txt', 'globalstar.txt',
                                 'amateur.txt', 'x-comm.txt', 'other-comm.txt', 'gps-ops.txt', 'glo-ops.txt', 'galileo.txt', 'beidou.txt',
                                 'sbas.txt', 'nnss.txt', 'musson.txt', 'science.txt', 'geodetic.txt', 'engineering.txt', 'education.txt', 'military.txt',
@@ -33,7 +33,7 @@ def parse_url(url):
         query = None
     else:
         query = parsed.query
-    return {'id': id, 'staticfile': staticfile, 'query': query}
+    return {'path': parsed.path, 'id': id, 'staticfile': staticfile, 'query': query}
 
 
 def to_degs(rads):
@@ -65,11 +65,11 @@ def parse_text_tle(target, baseURL, extensions=('',)):
 
 def read_settings(filepath):
     f = open(filepath, 'rb')
-    
+
 
 # def parse_html_tle(baseURL=base_N2YO_URL, extensions=('',), xpath='//div/pre/text()'):
 #        for path in extensions:
-#            url = baseURL + path    
+#            url = baseURL + path
 #            page = requests.get(url)                # getting html data
 #            tree = html.fromstring(page.text)       # converting to tree format for parsing
 #            data = tree.xpath(xpath)   # remove all newline and whitespace

@@ -11,7 +11,127 @@
 </head>
 
 <body><div class="main container">
-    <h1>Hello! This is the Dashboard!</h1>
+	<form class="form-horizontal">
+<fieldset>
+
+<!-- Form Name -->
+<legend>SatTrack - New Satellite</legend>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="textinput">Satellite Name</label>
+  <div class="col-md-4">
+  <input id="textinput" name="textinput" type="text" placeholder="" class="form-control input-md" required="">
+
+  </div>
+</div>
+
+<!-- Prepended text-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="prependedtext">Coordinates</label>
+  <div class="col-md-4">
+    <div class="input-group">
+      <span class="input-group-addon">Latitide</span>
+      <input id="prependedtext" name="prependedtext" class="form-control" placeholder="" type="text" required="">
+    </div>
+
+  </div>
+</div>
+
+<!-- Prepended text-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="prependedtext"></label>
+  <div class="col-md-4">
+    <div class="input-group">
+      <span class="input-group-addon">Longitude</span>
+      <input id="prependedtext" name="prependedtext" class="form-control" placeholder="" type="text" required="">
+    </div>
+
+  </div>
+</div>
+
+<!-- Prepended text-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="prependedtext"></label>
+  <div class="col-md-4">
+    <div class="input-group">
+      <span class="input-group-addon">Elevation</span>
+      <input id="prependedtext" name="prependedtext" class="form-control" placeholder="" type="text" required="">
+    </div>
+
+  </div>
+</div>
+
+<!-- Prepended checkbox -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="prependedcheckbox">Fast Forward</label>
+  <div class="col-md-4">
+    <div class="input-group">
+      <span class="input-group-addon">
+          <input type="checkbox">
+      </span>
+      <input id="prependedcheckbox" name="prependedcheckbox" class="form-control" type="text" placeholder="Factor">
+    </div>
+
+  </div>
+</div>
+
+<!-- Prepended checkbox -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="prependedcheckbox">Track</label>
+  <div class="col-md-4">
+    <div class="input-group">
+      <span class="input-group-addon">
+          <input type="checkbox">
+      </span>
+      <input id="prependedcheckbox" name="prependedcheckbox" class="form-control" type="text" placeholder="Serial port">
+    </div>
+
+  </div>
+</div>
+
+<!-- Multiple Checkboxes (inline) -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="checkboxes">Motors</label>
+  <div class="col-md-4">
+    <label class="checkbox-inline" for="checkboxes-0">
+      <input type="checkbox" name="checkboxes" id="checkboxes-0" value="1">
+      1
+    </label>
+    <label class="checkbox-inline" for="checkboxes-1">
+      <input type="checkbox" name="checkboxes" id="checkboxes-1" value="2">
+      2
+    </label>
+    <label class="checkbox-inline" for="checkboxes-2">
+      <input type="checkbox" name="checkboxes" id="checkboxes-2" value="3">
+      3
+    </label>
+    <label class="checkbox-inline" for="checkboxes-3">
+      <input type="checkbox" name="checkboxes" id="checkboxes-3" value="4">
+      4
+    </label>
+    <label class="checkbox-inline" for="checkboxes-4">
+      <input type="checkbox" name="checkboxes" id="checkboxes-4" value="5">
+      5
+    </label>
+    <label class="checkbox-inline" for="checkboxes-5">
+      <input type="checkbox" name="checkboxes" id="checkboxes-5" value="6">
+      6
+    </label>
+  </div>
+</div>
+
+<!-- Button -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="singlebutton"></label>
+  <div class="col-md-4">
+    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Create!</button>
+  </div>
+</div>
+
+</fieldset>
+</form>
+
 </div></body>
 
 </html>
