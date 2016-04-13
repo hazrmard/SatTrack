@@ -59,13 +59,3 @@ def test_motor(num, interval):
         time.sleep(interval)
     print 'finished'
 # Azimuth motor has limits (47->143) => (-90->270)
-
-
-def q(s=None):
-    if s:
-        s.stop()
-    try:
-        Server().stop_server()
-        print "Server closed."
-    except:
-        "Server already closed"

@@ -7,6 +7,7 @@ import SimpleHTTPServer
 import os
 from ..helpers import *
 
+DAEMON = True
 
 class Server:
     '''This class maintains a single server thread across all instances of SatTrack.
@@ -47,7 +48,7 @@ class Server:
 
     def serve(self):
         Server.server_thread = self.server_thread
-        Server.server_thread.daemon = True
+        Server.server_thread.daemon = DAEMON
         Server.server_thread.start()
 
     def _serve(self):
@@ -146,7 +147,7 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 
 def main():
-    print 'Nothing here yet...'
+    Server().start_server()
 
 
 def debug():
@@ -155,4 +156,12 @@ def debug():
     print __file__
 
 if __name__=='__main__':
-    main()
+    import sys
+    print os.path.dirname(__file__)
+    sys.path.append(os.path.dirname(__file__))
+    p = th.Thread(target=main)
+    p.start()
+    i=''
+    while i!='exit':
+        i = raw_input("Enter 'exit' to stop server:   ")
+    p.join(timeout=1)

@@ -406,9 +406,6 @@ def store_passes(satellite, outpath, n=100):
         dict_writer.writerows(data)
 
 
-def load_config(filepath):
-    settings = read_settings(f)
-
-
 if __name__ == '__main__':
-   pass
+   interface.Server().start_server()
+   raw_input('Interactive mode. Press enter to exit:  ')
