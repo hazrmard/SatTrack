@@ -2,17 +2,17 @@ __author__ = 'Ibrahim'
 
 import ephem
 import re
-from urlparse import urlparse
+from urlparse import urlparse, parse_qs
 import requests
 from dateutil import tz, parser
 
 base_N2YO_URL =  'http://www.n2yo.com/satellite/?s='
 base_CELESTRAK_URL = 'http://www.celestrak.com/NORAD/elements/'
-CELESTRAK_paths = ('weather.txt', 'noaa.txt', 'goes.txt', 'resource.txt', 'sarsat.txt.', 'dmc.txt', 'tdrss.txt', 'argos.txt', 'geo.txt',
-                                'intelsat.txt', 'gorizont.txt', 'raduga.txt', 'molniya.txt', 'iridium.txt', 'orbcomm.txt', 'globalstar.txt',
+CELESTRAK_paths = ('stations.txt', 'weather.txt', 'noaa.txt', 'goes.txt', 'resource.txt', 'sarsat.txt.', 'dmc.txt', 'tdrss.txt', 'argos.txt',
+                                'geo.txt', 'intelsat.txt', 'gorizont.txt', 'raduga.txt', 'molniya.txt', 'iridium.txt', 'orbcomm.txt', 'globalstar.txt',
                                 'amateur.txt', 'x-comm.txt', 'other-comm.txt', 'gps-ops.txt', 'glo-ops.txt', 'galileo.txt', 'beidou.txt',
                                 'sbas.txt', 'nnss.txt', 'musson.txt', 'science.txt', 'geodetic.txt', 'engineering.txt', 'education.txt', 'military.txt',
-                                'radat.txt', 'cubesat.txt', 'other.txt',)
+                                'radat.txt', 'cubesat.txt', 'other.txt', 'tle-new.txt')
 AMSAT_URL = 'http://www.amsat.org/amsat/ftp/keps/current/nasa.all'
 
 def sanitize_url(url):
@@ -63,8 +63,17 @@ def parse_text_tle(target, baseURL, extensions=('',)):
             continue
 
 
-def read_settings(filepath):
-    f = open(filepath, 'rb')
+def populate_class_from_query(s, q):
+    q = parse_qs(q)
+    s.get_tle(q['id'][0])
+    s.set_location(lat=q['lat'][0], lon=q['lon'][0], ele=q['ele'][0])
+    if 'trace' in q:
+        s.current_config['trace'] = int(q['trace'][0])
+    s.begin_computing(trace=int(q['trace'][0]))
+    if q['track'] == '1':
+        s.connect_servos()
+    return s
+
 
 
 # def parse_html_tle(baseURL=base_N2YO_URL, extensions=('',), xpath='//div/pre/text()'):

@@ -34,7 +34,7 @@ class SatTrack:
         self.current_config = {'interval':1, 'trace':0, 'port':'2', 'motors':(1,2), 'pwm':(900,2100), 'minrange':(0,0), \
                                         'maxrange':(90,360)}
         self.log = ['SatTrack initialized.']
-        
+
         if MOTOR_DEBUG_MODE:
             print "Debug Mode..."
 
@@ -45,13 +45,13 @@ class SatTrack:
         :param lon: Observer's longitide (positive east from the prime meridian)
         :param ele: Observer's elevation above sea level.
         """
-        self.observer.lat = lat
-        self.observer.lon = lon
-        self.observer.elev = ele
+        self.observer.lat = str(lat)
+        self.observer.lon = str(lon)
+        self.observer.elev = int(ele)
         self.observer.epoch = ephem.Date(str(datetime.utcnow()))
         self.observer.date = ephem.Date(str(datetime.utcnow()))
         self.put_log('Location ' + lat + 'N; ' + lon + 'E; ' + str(ele) + 'm elevation.')
-        
+
     def load_tle(self, filename):
         """
         loads satellite TLE data from a text file
@@ -64,7 +64,7 @@ class SatTrack:
         self.tle = data
         self.id = sanitize(data[0])
         self.put_log('Loaded TLE from: ' + filename)
-    
+
     def get_tle(self, noradid, destination=None):
         """
         parses CELESTRAK and AMSAT for satellite's TLE data using its NORAD id.
@@ -74,6 +74,8 @@ class SatTrack:
         data = parse_text_tle(noradid, AMSAT_URL)
         if not data:
             data = parse_text_tle(noradid, base_CELESTRAK_URL, CELESTRAK_paths)
+        if not data:
+            return False
         if destination is not None:             # write to destination if provided
             f = open(destination, 'wb')
             wdata = [str(noradid) + '\n'] + [data[0] + '\n'] + [data[1] + '\n']
@@ -83,7 +85,8 @@ class SatTrack:
         self.tle = [str(noradid), data[0], data[1]]
         self.id = sanitize(str(noradid))
         self.put_log('Found ID: ' + str(noradid))
-    
+        return True
+
     def begin_computing(self, interval=1.0, trace=0.0, display=False):
         """
         Starts a thread that computes satellite's coordinates in real time based on the observer's coordinates.
@@ -94,10 +97,10 @@ class SatTrack:
             self.put_log("Already computing.")
             print 'Already computing'
             return
-            
+
         self.current_config['interval'] = interval
         self.current_config['trace'] = trace
-        
+
         self.interval = interval
         t = th.Thread(target=self._update_coords, args=[interval, trace])
         t.daemon = True
@@ -125,7 +128,7 @@ class SatTrack:
                     print e
                     self._isActive = False
             time.sleep(t)
-    
+
     def visualize(self, host='localhost', port=8000, openbrowser=True):
         """
         Start a local server and visualize satellite position. URL is of the format: http://localhost:8000/<name>/
@@ -142,7 +145,7 @@ class SatTrack:
             print "opening URL: " + url
             wb.open(url, new=2)
         self.put_log('Started server at: ' + host)
-    
+
     def begin_tracking(self, interval=None):
         """
         Begins a thread that sends periodic commands to servo motors.
@@ -173,7 +176,7 @@ class SatTrack:
                 if abs(alt - self.altmotor.current_pos) >= self.altmotor.resolution:
                     self.altmotor.move(int(alt))
             time.sleep(t)
-    
+
     def is_trackable(self):
         """
         Checks if the satellite's current position can be tracked by the motors (accounting for range and orientation)
@@ -190,7 +193,7 @@ class SatTrack:
         with self.lock:
             return self.satellite.alt >= self.observer.horizon
 
-    def connect_servos(self, port='2', motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0), mode='a', pwm=(900, 2100), map=(lambda x: x, lambda x: x), timeout=1):
+    def connect_servos(self, port='COM3', motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0), mode='a', pwm=(900, 2100), map=(lambda x: x, lambda x: x), timeout=1):
         """
         Connects computer to arduino which has a pair of servos connected. Initializes motors to their default positions
         :param port: port name/number e.g 'COM3' on a PC, '/dev/ttyUSB0' on Linux, '/dev/tty.usbserial-FTALLOK2' on Mac
@@ -199,7 +202,7 @@ class SatTrack:
         :param initpos: A touple containing the initial orientation angle for (altitude, azimuth) motors
         """
         servos = ServoController(port=port, motors=motors, mode=mode, pwm=pwm, timeout=timeout)
-        time.sleep(timeout * 2)      # interval needed to let arduino finish starting up    
+        time.sleep(timeout * 2)      # interval needed to let arduino finish starting up
         servos.setUp()                  # apply PWM values
         self.altmotor, self.azmotor = servos.motors
         self.altmotor.range = (minrange[0], maxrange[0])
@@ -269,11 +272,11 @@ class SatTrack:
                 print('#' + str(i) + ', Azimuth: ' + str(self.satellite.az) + ', Altitude: ' + str(self.satellite.alt) +
                       ' Lat: ' + str(self.satellite.sublat) + ' Lon: ' + str(self.satellite.sublong) + '\r'),
             time.sleep(self.interval)
-    
+
     def curr_pos(self):
         with self.lock:
             return {'alt': to_degs(self.satellite.alt), 'az': to_degs(self.satellite.az), 'lat': to_degs(self.satellite.sublat), 'lon': to_degs(self.satellite.sublong)}
-            
+
 
     def write_to_file(self, fname, secs):
         i = 0
@@ -284,18 +287,18 @@ class SatTrack:
                 f.write('#' + str(i) + ' Azimuth: ' + str(self.satellite.az) + ' Altitude: ' + str(self.satellite.alt) + '\n')
             time.sleep(self.interval)
         f.close()
-        
+
     def put_log(self, text):
         """Enqueue text to instance log. It can later be dequeued by the interface class to display to the user.
         :text Whatever that it is to be logged. String type.
         """
         self.log.append(str(text))
-    
+
     def get_log(self):
         log = self.log
         self.log = []
         return log
-    
+
     def stop_tracking(self):
         self.stopTracking.set()
         try:
@@ -305,7 +308,7 @@ class SatTrack:
         except (AttributeError, LookupError) as e:
             self.put_log("Not tracking anything.")
         self.stopTracking.clear()
-    
+
     def stop_computing(self):
         self.stopComputing.set()
         try:
@@ -315,7 +318,7 @@ class SatTrack:
         except (AttributeError, LookupError) as e:
             self.put_log("Not computing anything.")
         self.stopComputing.clear()
-    
+
     def stop(self):
         self.stop_computing()
         self.stop_tracking()
@@ -325,8 +328,8 @@ class SatTrack:
         except:
             pass
         print "stopped"
-            
-            
+
+
 class ServoController:
     """
     Interface between SatTrack and individual motors.
@@ -342,7 +345,7 @@ class ServoController:
         except serial.SerialException as e:
             print e.message
         self.motors = [Motor(i, self.serial, self.pwm, self.mode) for i in motors]
-    
+
     def setUp(self):
         serial_arg = 'x' + str(self.pwm[0]) + '_' + str(self.pwm[1])
         self.serial.write(serial_arg)
@@ -385,7 +388,7 @@ class Motor:
         if MOTOR_DEBUG_MODE:
             print angle, self.port.readline().strip()
         self.current_pos = angle
-    
+
     def _angle_to_pulse(self, angle):
         """
         Converts angle linearly to pulse width.
@@ -409,4 +412,3 @@ def load_config(filepath):
 
 if __name__ == '__main__':
    pass
-

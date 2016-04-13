@@ -9,10 +9,14 @@ from ..helpers import *
 
 
 class Server:
+    '''This class maintains a single server thread across all instances of SatTrack.
+    If a server is already running, and start_server(new=False) then does nothing.
+    Else for the first instance or when new=True, creates a new server thread.
+    '''
     isServing = False
-    server = None
-    server_thread = None
-    stop = th.Event()
+    server = None           # single server shared by all instances of SatTrack
+    server_thread = None    # single thread shared by all instances of SatTrack
+    stop = th.Event()       # event that signals server thread to terminate
 
     def __init__(self):
         #self.server_thread = th.Thread(target=self._serve)
@@ -66,6 +70,7 @@ class Server:
 class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     sources = {}
+    localpath = sanitize_url(os.path.dirname(__file__)) + '/'
 
     def do_GET(self):
         """
@@ -74,11 +79,16 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
         :return:
         """
         source = None
-        localpath = sanitize_url(os.path.dirname(__file__)) + '/'
+        localpath = Interface.localpath
         parsed = parse_url(self.path)
         if parsed['path'] == '/' and parsed['query'] is not None:
-            print parsed['query']
+            from ..sattrack import SatTrack # python prevents repetitive imports
+            satellite = populate_class_from_query(SatTrack(), parsed['query'])
+            Interface.sources[satellite.id] = satellite
             self.send_response(200)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(satellite.id)
             return
         elif self.path == '/' and parsed['query'] is None:  # i.e. localhost:port_number/
             self.path = localpath + 'dashboard.html'      # set entry point
@@ -136,14 +146,13 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 
 def main():
-    s = Server()
-    s.start_server()
-    i = input('Exit? ... ')
-    if i =='y':
-        s.stop_server()
-    print 'server closed'
+    print 'Nothing here yet...'
+
 
 def debug():
     print os.path.dirname(__file__)
     print os.listdir(os.path.dirname(__file__))
     print __file__
+
+if __name__=='__main__':
+    main()

@@ -3,7 +3,6 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>SatTrack</title>
-	<link rel="stylesheet" type="text/css" href="dashoard_styles.css">
     <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
 	<script src="jquery-2.1.4.min.js"></script>
     <script src="bootstrap.min.js"></script>
@@ -19,9 +18,9 @@
 
 <!-- Text input-->
 <div class="form-group">
-  <label class="col-md-4 control-label" for="textinput">Satellite Name</label>
+  <label class="col-md-4 control-label" for="id">Satellite Name</label>
   <div class="col-md-4">
-  <input id="textinput" name="textinput" type="text" placeholder="" class="form-control input-md" required="">
+  <input id="id" name="id" type="text" placeholder="" class="form-control input-md">
 
   </div>
 </div>
@@ -31,8 +30,8 @@
   <label class="col-md-4 control-label" for="prependedtext">Coordinates</label>
   <div class="col-md-4">
     <div class="input-group">
-      <span class="input-group-addon">Latitide</span>
-      <input id="prependedtext" name="prependedtext" class="form-control" placeholder="" type="text" required="">
+      <span class="input-group-addon">Latitude</span>
+      <input id="lat" name="lat" class="form-control" placeholder="" type="text">
     </div>
 
   </div>
@@ -44,7 +43,7 @@
   <div class="col-md-4">
     <div class="input-group">
       <span class="input-group-addon">Longitude</span>
-      <input id="prependedtext" name="prependedtext" class="form-control" placeholder="" type="text" required="">
+      <input id="lon" name="lon" class="form-control" placeholder="" type="text">
     </div>
 
   </div>
@@ -56,81 +55,44 @@
   <div class="col-md-4">
     <div class="input-group">
       <span class="input-group-addon">Elevation</span>
-      <input id="prependedtext" name="prependedtext" class="form-control" placeholder="" type="text" required="">
+      <input id="ele" name="ele" class="form-control" placeholder="" type="text">
     </div>
 
   </div>
 </div>
 
-<!-- Prepended checkbox -->
+<!-- Text input-->
 <div class="form-group">
-  <label class="col-md-4 control-label" for="prependedcheckbox">Fast Forward</label>
-  <div class="col-md-4">
-    <div class="input-group">
-      <span class="input-group-addon">
-          <input type="checkbox">
-      </span>
-      <input id="prependedcheckbox" name="prependedcheckbox" class="form-control" type="text" placeholder="Factor">
-    </div>
-
+  <label class="col-md-4 control-label" for="textinput">Fast Fwd</label>
+  <div class="col-md-2">
+  <input id="trace" name="trace" type="text" placeholder="Factor" class="form-control input-md">
+  <span class="help-block">Leave empty for real-time</span>
   </div>
 </div>
 
-<!-- Prepended checkbox -->
+<!-- Select Basic -->
 <div class="form-group">
-  <label class="col-md-4 control-label" for="prependedcheckbox">Track</label>
-  <div class="col-md-4">
-    <div class="input-group">
-      <span class="input-group-addon">
-          <input type="checkbox">
-      </span>
-      <input id="prependedcheckbox" name="prependedcheckbox" class="form-control" type="text" placeholder="Serial port">
-    </div>
-
+  <label class="col-md-4 control-label" for="selectbasic">Track</label>
+  <div class="col-md-2">
+    <select id="track" name="track" class="form-control">
+      <option value="0">No</option>
+      <option value="1">Yes</option>
+    </select>
   </div>
 </div>
 
-<!-- Multiple Checkboxes (inline) -->
-<div class="form-group">
-  <label class="col-md-4 control-label" for="checkboxes">Motors</label>
-  <div class="col-md-4">
-    <label class="checkbox-inline" for="checkboxes-0">
-      <input type="checkbox" name="checkboxes" id="checkboxes-0" value="1">
-      1
-    </label>
-    <label class="checkbox-inline" for="checkboxes-1">
-      <input type="checkbox" name="checkboxes" id="checkboxes-1" value="2">
-      2
-    </label>
-    <label class="checkbox-inline" for="checkboxes-2">
-      <input type="checkbox" name="checkboxes" id="checkboxes-2" value="3">
-      3
-    </label>
-    <label class="checkbox-inline" for="checkboxes-3">
-      <input type="checkbox" name="checkboxes" id="checkboxes-3" value="4">
-      4
-    </label>
-    <label class="checkbox-inline" for="checkboxes-4">
-      <input type="checkbox" name="checkboxes" id="checkboxes-4" value="5">
-      5
-    </label>
-    <label class="checkbox-inline" for="checkboxes-5">
-      <input type="checkbox" name="checkboxes" id="checkboxes-5" value="6">
-      6
-    </label>
-  </div>
-</div>
+</fieldset>
+
+</form>
 
 <!-- Button -->
 <div class="form-group">
   <label class="col-md-4 control-label" for="singlebutton"></label>
   <div class="col-md-4">
-    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Create!</button>
+    <button id="create" name="create" class="btn btn-primary">Button</button>
   </div>
 </div>
 
-</fieldset>
-</form>
 
 </div></body>
 
