@@ -10,7 +10,7 @@ from interface import *
 import webbrowser as wb
 import struct
 from .helpers import *
-from collections import deque
+import defaults
 
 MOTOR_DEBUG_MODE = False
 
@@ -23,7 +23,6 @@ class SatTrack:
         self.threads['tracker'] = None
         self.threads['motors'] = None
         self.lock = th.Lock()
-        self.interval = 1
         self._isActive = False
         self.azmotor = None
         self.altmotor = None
@@ -31,26 +30,35 @@ class SatTrack:
         self.tle = None
         self.stopTracking = th.Event()
         self.stopComputing = th.Event()
-        self.current_config = {'interval':1, 'trace':0, 'port':'2', 'motors':(1,2), 'pwm':(900,2100), 'minrange':(0,0), \
-                                        'maxrange':(90,360)}
+        self.default_config = {'interval':defaults.interval, 'trace': defaults.trace, 'port':defaults.port, 'motors':defaults.motors, 'pwm':defaults.pwm, 'minrange':defaults.minrange, \
+                                        'maxrange':defaults.maxrange, 'lat': defaults.lat, 'lon': defaults.lon, 'ele': defaults.ele, 'initpos': defaults.initpos, 'timeout': defaults.timeout, \
+                                        'angle_map': defaults.angle_map, 'baudrate': defaults.baudrate}
         self.log = ['SatTrack initialized.']
 
         if MOTOR_DEBUG_MODE:
             print "Debug Mode..."
 
-    def set_location(self, lat='36.1486', lon='-86.8050', ele=182):
+    def set_location(self, lat=None, lon=None, ele=None):
         """
         Sets location of observer using coordinates (+N and +E). Defaults to Vanderbilt University's coordinates.
         :param lat: Observer's latitude (positive north from the equator)
         :param lon: Observer's longitide (positive east from the prime meridian)
         :param ele: Observer's elevation above sea level.
         """
+        lat = self.default_config['lat'] if lat is None else lat
+        lon = self.default_config['lon'] if lon is None else lon
+        ele = self.default_config['ele'] if ele is None else ele
+
+        self.default_config['lat'] = lat
+        self.default_config['lon'] = lon
+        self.default_config['ele'] = ele
+
         self.observer.lat = str(lat)
         self.observer.lon = str(lon)
         self.observer.elev = int(ele)
         self.observer.epoch = ephem.Date(str(datetime.utcnow()))
         self.observer.date = ephem.Date(str(datetime.utcnow()))
-        self.put_log('Location ' + lat + 'N; ' + lon + 'E; ' + str(ele) + 'm elevation.')
+        self.put_log('Location ' + str(lat) + 'N; ' + str(lon) + 'E; ' + str(ele) + 'm elevation.')
 
     def load_tle(self, filename):
         """
@@ -87,21 +95,22 @@ class SatTrack:
         self.put_log('Found ID: ' + str(noradid))
         return True
 
-    def begin_computing(self, interval=1.0, trace=0.0, display=False):
+    def begin_computing(self, interval=None, trace=None, display=False):
         """
         Starts a thread that computes satellite's coordinates in real time based on the observer's coordinates.
         :param interval: Time between computations.
         :param display: To show a map with the satellite's location.
         """
+        interval = self.default_config['interval'] if interval is None else interval
+        self.default_config['interval'] = interval
+        trace = self.default_config['trace'] if trace is None else trace
+        self.default_config['trace'] = trace
+
         if self.threads['tracker']:
             self.put_log("Already computing.")
             print 'Already computing'
             return
 
-        self.current_config['interval'] = interval
-        self.current_config['trace'] = trace
-
-        self.interval = interval
         t = th.Thread(target=self._update_coords, args=[interval, trace])
         t.daemon = True
         self.threads['tracker'] = t
@@ -129,12 +138,15 @@ class SatTrack:
                     self._isActive = False
             time.sleep(t)
 
-    def visualize(self, host='localhost', port=8000, openbrowser=True):
+    def visualize(self, host=None, port=8000, openbrowser=True):
         """
         Start a local server and visualize satellite position. URL is of the format: http://localhost:8000/<name>/
         <name> is sanitized by removing any non-alphanumeric characters.
         :param openbrowser: False -> start server only, True -> start server and open browser.
         """
+        host = self.default_config['host'] if host is None else host
+        self.default_config['host'] = host
+
         self.server.host = host
         self.server.port = port
         if not Server.server:
@@ -152,8 +164,7 @@ class SatTrack:
         :param interval: Time between commands in seconds, defaults to computation interval.
         :return:
         """
-        if interval is None:
-            interval = self.interval
+        interval = self.default_config['interval'] if interval is None else interval
         t = th.Thread(target=self._update_tracker, args=[interval])
         t.daemon = True
         self.threads['motors'] = t
@@ -193,7 +204,7 @@ class SatTrack:
         with self.lock:
             return self.satellite.alt >= self.observer.horizon
 
-    def connect_servos(self, port='COM3', motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0), mode='a', pwm=(900, 2100), map=(lambda x: x, lambda x: x), timeout=1):
+    def connect_servos(self, port='COM3', motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0), mode='a', pwm=(900, 2100), angle_map=(lambda x: x, lambda x: x), timeout=1):
         """
         Connects computer to arduino which has a pair of servos connected. Initializes motors to their default positions
         :param port: port name/number e.g 'COM3' on a PC, '/dev/ttyUSB0' on Linux, '/dev/tty.usbserial-FTALLOK2' on Mac
@@ -201,6 +212,25 @@ class SatTrack:
         :param maxrange: A touple containing the maximum angle for (altitude, azimuth) motors
         :param initpos: A touple containing the initial orientation angle for (altitude, azimuth) motors
         """
+        port = self.default_config['port'] if port is None else port
+        motors = self.default_config['motors'] if motors is None else motors
+        minrange = self.default_config['minrange'] if minrange is None else minrange
+        maxrange = self.default_config['maxrange'] if maxrange is None else maxrange
+        initpos = self.default_config['initpos'] if initpos is None else initpos
+        pwm = self.default_config['pwm'] if pwm is None else pwm
+        angle_map = self.default_config['angle_map'] if angle_map is None else angle_map
+        timeout = self.default_config['timeout'] if timeout is None else timeout
+
+        self.default_config['port'] = port
+        self.default_config['motors'] = motors
+        self.default_config['minrange'] = minrange
+        self.default_config['maxrange'] = maxrange
+        self.default_config['initpos'] = initpos
+        self.default_config['pwm'] = pwm
+        self.default_config['angle_map'] = angle_map
+        self.default_config['timeout'] = timeout
+
+
         servos = ServoController(port=port, motors=motors, mode=mode, pwm=pwm, timeout=timeout)
         time.sleep(timeout * 2)      # interval needed to let arduino finish starting up
         servos.setUp()                  # apply PWM values
@@ -209,8 +239,8 @@ class SatTrack:
         self.azmotor.range = (minrange[1], maxrange[1])
         self.altmotor.pos0 = initpos[0]
         self.azmotor.pos0 = initpos[1]
-        self.altmotor.map = map[0]
-        self.azmotor.map = map[1]
+        self.altmotor.map = angle_map[0]
+        self.azmotor.map = angle_map[1]
         self.azmotor.initialize()      # move to starting positions
         self.altmotor.initialize()
         self.put_log('Connected to serial port: ' + str(port) + ' on motors: ' + str(motors[0]) + ' ,' + str(motors[1]) + '.')
@@ -271,7 +301,7 @@ class SatTrack:
             with self.lock:
                 print('#' + str(i) + ', Azimuth: ' + str(self.satellite.az) + ', Altitude: ' + str(self.satellite.alt) +
                       ' Lat: ' + str(self.satellite.sublat) + ' Lon: ' + str(self.satellite.sublong) + '\r'),
-            time.sleep(self.interval)
+            time.sleep(self.default_config['interval'])
 
     def curr_pos(self):
         with self.lock:
@@ -285,7 +315,7 @@ class SatTrack:
             i += 1
             with self.lock:
                 f.write('#' + str(i) + ' Azimuth: ' + str(self.satellite.az) + ' Altitude: ' + str(self.satellite.alt) + '\n')
-            time.sleep(self.interval)
+            time.sleep(self.default_config['interval'])
         f.close()
 
     def put_log(self, text):
@@ -302,7 +332,7 @@ class SatTrack:
     def stop_tracking(self):
         self.stopTracking.set()
         try:
-            self.threads['motors'].join(timeout=self.interval)
+            self.threads['motors'].join(timeout=self.default_config['interval'])
             self.threads['motors'] = None
             self.put_log("Stopped tracking.")
         except (AttributeError, LookupError) as e:
@@ -312,7 +342,7 @@ class SatTrack:
     def stop_computing(self):
         self.stopComputing.set()
         try:
-            self.threads['tracker'].join(timeout=self.interval)
+            self.threads['tracker'].join(timeout=self.default_config['interval'])
             self.threads['tracker'] = None
             self.put_log("Stopped computing.")
         except (AttributeError, LookupError) as e:
@@ -334,14 +364,14 @@ class ServoController:
     """
     Interface between SatTrack and individual motors.
     """
-    def __init__(self, port='2', motors=(1,2), mode='a', pwm=(900,2100), baudrade=9600, timeout=1):
-        self.portname = port
-        self.baudrate = baudrade
-        self.timeout = timeout
+    def __init__(self, port=None, motors=None, mode='a', pwm=None, baudrade=None, timeout=None):
+        self.portname = defaults.port if port is none else port
+        self.baudrate = defaults.baudrade if baudrate is none else baudrate
+        self.timeout = defaults.timeout if timeout is none else timeout
         self.mode = mode
-        self.pwm = pwm
+        self.pwm = defaults.pwm if pwm is none else pwm
         try:
-            self.serial = serial.Serial(port, baudrade, timeout=timeout)
+            self.serial = serial.Serial(self.portname , self.baudrade, timeout=self.timeout)
         except serial.SerialException as e:
             print e.message
         self.motors = [Motor(i, self.serial, self.pwm, self.mode) for i in motors]

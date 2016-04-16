@@ -121,9 +121,9 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
                     source.stop_tracking()
                 elif parsed['query'] == u'startcomputing':
                     self.send_response(200)
-                    source.begin_computing(interval=source.current_config['interval'], trace=source.current_config['trace'])
+                    source.begin_computing()
                 elif parsed['query'] == u'starttracking':
-                    source.begin_tracking(interval=source.current_config['interval'])
+                    source.begin_tracking()
                 else:
                     self.send_response(400, 'Source not found.')
                 return      # quit after returning json
@@ -137,7 +137,7 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
         d['lat'] = to_degs(source.satellite.sublat)
         d['az'] = to_degs(source.satellite.az)
         d['alt'] = to_degs(source.satellite.alt)
-        d['interval'] = source.interval
+        d['interval'] = source.default_config['interval']
         d['time'] = str(source.observer.date)
         d['log'] = source.get_log()
         return json.dumps(d)

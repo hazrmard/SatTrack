@@ -64,12 +64,14 @@ def parse_text_tle(target, baseURL, extensions=('',)):
 
 
 def populate_class_from_query(s, q):
-    q = parse_qs(q)
+    q = parse_qs(q, False)
     s.get_tle(q['id'][0])
-    s.set_location(lat=q['lat'][0], lon=q['lon'][0], ele=q['ele'][0])
-    if 'trace' in q:
-        s.current_config['trace'] = int(q['trace'][0])
-    s.begin_computing(trace=int(q['trace'][0]))
+    ele = None if 'ele' not in q else q['ele'][0]
+    lon = None if 'lon' not in q else q['lon'][0]
+    lat = None if 'lat' not in q else q['lat'][0]
+    s.set_location(lat=lat, lon=lon, ele=ele)
+    trace = float(q['trace'][0]) if 'trace' in q else None
+    s.begin_computing(trace=trace)
     if q['track'] == '1':
         s.connect_servos()
     return s
