@@ -5,6 +5,7 @@ import re
 from urlparse import urlparse, parse_qs
 import requests
 from dateutil import tz, parser
+from serial.tools.list_ports import comports
 
 base_N2YO_URL =  'http://www.n2yo.com/satellite/?s='
 base_CELESTRAK_URL = 'http://www.celestrak.com/NORAD/elements/'
@@ -77,6 +78,11 @@ def populate_class_from_query(s, q):
     return s
 
 
+def find_arduino():
+    for p in comports():
+        if 'Arduino' in p.description:
+            return p.device
+    return None
 
 # def parse_html_tle(baseURL=base_N2YO_URL, extensions=('',), xpath='//div/pre/text()'):
 #        for path in extensions:

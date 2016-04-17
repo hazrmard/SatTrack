@@ -230,6 +230,8 @@ class SatTrack:
         self.default_config['angle_map'] = angle_map
         self.default_config['timeout'] = timeout
 
+        if port is None:
+            print 'Arduino port not found.'
 
         servos = ServoController(port=port, motors=motors, mode=mode, pwm=pwm, timeout=timeout)
         time.sleep(timeout * 2)      # interval needed to let arduino finish starting up
@@ -354,7 +356,7 @@ class SatTrack:
         self.stop_tracking()
         self.server.remove_source(self)
         try:
-            self.altmotor.port.close()
+            ServoController.serial_port.close()
         except:
             pass
         print "stopped"
@@ -364,17 +366,24 @@ class ServoController:
     """
     Interface between SatTrack and individual motors.
     """
-    def __init__(self, port=None, motors=None, mode='a', pwm=None, baudrade=None, timeout=None):
-        self.portname = defaults.port if port is none else port
-        self.baudrate = defaults.baudrade if baudrate is none else baudrate
-        self.timeout = defaults.timeout if timeout is none else timeout
+    serial_port = None
+
+    def __init__(self, port=None, motors=None, mode='a', pwm=None, baudrate=None, timeout=None):
+        self.portname = defaults.port if port is None else port
+        self.baudrate = defaults.baudrate if baudrate is None else baudrate
+        self.timeout = defaults.timeout if timeout is None else timeout
+        self.motors = defaults.motors if motors is None else motors
         self.mode = mode
-        self.pwm = defaults.pwm if pwm is none else pwm
+        self.pwm = defaults.pwm if pwm is None else pwm
         try:
-            self.serial = serial.Serial(self.portname , self.baudrade, timeout=self.timeout)
+            if ServoController.serial_port is not None:
+                self.serial = ServoController.serial_port
+            else:
+                self.serial = serial.Serial(self.portname , self.baudrate, timeout=self.timeout)
+                ServoController.serial_port = self.serial
         except serial.SerialException as e:
             print e.message
-        self.motors = [Motor(i, self.serial, self.pwm, self.mode) for i in motors]
+        self.motors = [Motor(i, self.serial, self.pwm, self.mode) for i in self.motors]
 
     def setUp(self):
         serial_arg = 'x' + str(self.pwm[0]) + '_' + str(self.pwm[1])
