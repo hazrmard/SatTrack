@@ -123,6 +123,7 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
                     self.send_response(200)
                     source.begin_computing()
                 elif parsed['query'] == u'starttracking':
+                    self.send_response(200)
                     source.begin_tracking()
                 else:
                     self.send_response(400, 'Source not found.')

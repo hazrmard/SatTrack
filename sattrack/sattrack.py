@@ -165,6 +165,12 @@ class SatTrack:
         :return:
         """
         interval = self.default_config['interval'] if interval is None else interval
+
+        if self.threads['motors']:
+            self.put_log("Already tracking.")
+            print 'Already tracking.'
+            return
+
         t = th.Thread(target=self._update_tracker, args=[interval])
         t.daemon = True
         self.threads['motors'] = t
@@ -338,6 +344,7 @@ class SatTrack:
             self.threads['motors'] = None
             self.put_log("Stopped tracking.")
         except (AttributeError, LookupError) as e:
+            print e
             self.put_log("Not tracking anything.")
         self.stopTracking.clear()
 

@@ -73,7 +73,7 @@ def populate_class_from_query(s, q):
     s.set_location(lat=lat, lon=lon, ele=ele)
     trace = float(q['trace'][0]) if 'trace' in q else None
     s.begin_computing(trace=trace)
-    if q['track'] == '1':
+    if q['track'][0] == '1':
         s.connect_servos()
     return s
 
