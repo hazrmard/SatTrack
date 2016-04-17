@@ -204,7 +204,7 @@ class SatTrack:
         with self.lock:
             return self.satellite.alt >= self.observer.horizon
 
-    def connect_servos(self, port='COM3', motors=(1,2), minrange=(0, 0), maxrange=(180, 360), initpos=(0, 0), mode='a', pwm=(900, 2100), angle_map=(lambda x: x, lambda x: x), timeout=1):
+    def connect_servos(self, port=None, motors=None, minrange=None, maxrange=None, initpos=None, mode='a', pwm=None, angle_map=None, timeout=None):
         """
         Connects computer to arduino which has a pair of servos connected. Initializes motors to their default positions
         :param port: port name/number e.g 'COM3' on a PC, '/dev/ttyUSB0' on Linux, '/dev/tty.usbserial-FTALLOK2' on Mac
