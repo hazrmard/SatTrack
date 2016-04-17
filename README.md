@@ -36,15 +36,23 @@ Note: python should previously be added to the system PATH variable. Otherwise t
 
 External python dependencies are:
 * [PyEphem](https://pypi.python.org/pypi/pyephem/)
-* [lxml](https://pypi.python.org/pypi/lxml/3.5.0)
 * [PySerial](https://pypi.python.org/pypi/pyserial)
 * [Requests](https://pypi.python.org/pypi/requests)
 * [Dateutil](https://pypi.python.org/pypi/python-dateutil)
 
-For illustration the `test()` function in `test.py` contains basic uses of the SatTrack class.
+For illustration the `sandbox.py` and `trial.py` which contain basic uses of the SatTrack class.
 
-##Usage
-###Tracking Satellites
+##Usage  
+###Easy Way  
+The easy way is a GUI in a web browser. After installing SatTrack, type:
+```bash
+> python -m sattrack.interactive
+```  
+The GUI simplifies controls by requiring less arguments. The values put in `defaults.py` are used for all satellite instances created.  
+This starts a local server on `localhost:8000` and also broadcasts it over the device's network. You can open up the interface by typing `localhost:8000` on your local browser. Or you can access the interface from any web browser on another device by going to `<HOST_IP_ADDRESS>:8000` e.g `192.168.42.1:8000`. For connecting servos etc. see *Set up* and *Wiring* in the next section.  
+
+###Hard Way  
+####Tracking Satellites
 ```python
 from sattrack import SatTrack   # Import the `SatTrack` class:
 s = SatTrack()                  # Instantiate class
@@ -55,12 +63,12 @@ s.begin_computing()             # Start calculating topocentric coordinates at 1
 s.show_location()               # Start printing satellite data to console
 s.visualize()                   # Start a server and visualize satellite on map in browser
 ```
-Check [AMSAT](http://www.amsat.org/amsat/ftp/keps/current/nasa.all) and [CELESTRAK](http://www.celestrak.com/NORAD/elements/) for satellite names.  The TLE format SatTrack accepts can be seen in `fox1.tle`.  
-###Servo Control
+Check [AMSAT](http://www.amsat.org/amsat/ftp/keps/current/nasa.all) and [CELESTRAK](http://www.celestrak.com/NORAD/elements/) for satellite names.  The TLE format SatTrack accepts can be seen in `AO-85.tle`.  
+####Servo Control
 This functionality was added to allow antennas to track a satellite's pass using 2 servo motors. One servo motor controls azimuth and the other controls altitude.  
 Servo control is split into 2 parts: getting coordinates for satellite, and conveying them to servo motors.
 ####Set up
-1. Connect an arduino board via a USB port to the computer. You should know the name of the port e.g. `COM3`.
+1. Connect an arduino board via a USB port to the computer.
 2. Load the file `ServoCont/multipleSerialServoControl/multipleSerialServoControl.ino` onto the board.
 3. Quit the arduino IDE to free up USB port control.
 For most servo motors, you will not need to make any changes to the `.ino` file.
@@ -92,7 +100,7 @@ s.begin_tracking()
 ```
 And that's it!
 
-###Clean up
+####Clean up
 ```python
 s.stop()                # stop computations and tracking
 s.server.stop_server()  # stop server in case you are visualizing satellite
