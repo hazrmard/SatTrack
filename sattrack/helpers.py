@@ -80,7 +80,7 @@ def populate_class_from_query(s, q):
 
 def find_arduino():
     for p in comports():
-        if 'Arduino' in p.description:
+        if 'Arduino' in p.description or 'Arduino' in p.manufacturer:
             return p.device
     return None
 
