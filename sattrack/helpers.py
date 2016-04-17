@@ -79,9 +79,13 @@ def populate_class_from_query(s, q):
 
 
 def find_arduino():
-    for p in comports():
-        if 'Arduino' in p.description or 'Arduino' in p.manufacturer:
-            return p.device
+    P = comports()
+    if P:
+        for p in P:
+            if 'Arduino' in p.description or 'Arduino' in p.manufacturer:
+                return p.device
+    else:
+        print 'Arduino not detected on any port.'
     return None
 
 # def parse_html_tle(baseURL=base_N2YO_URL, extensions=('',), xpath='//div/pre/text()'):
