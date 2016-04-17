@@ -238,6 +238,7 @@ class SatTrack:
 
         if port is None:
             print 'Arduino port not found.'
+            return
 
         servos = ServoController(port=port, motors=motors, mode=mode, pwm=pwm, timeout=timeout)
         time.sleep(timeout * 2)      # interval needed to let arduino finish starting up
