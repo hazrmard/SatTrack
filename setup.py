@@ -17,4 +17,4 @@ setup(
 #installing using install_requires in setup() does not seem to work
 # pip shoulf be in system path variable
 print 'INSTALLING PYEPHEM'
-call("pip install pyephem")
+call("pip install pyephem", shell=True)
