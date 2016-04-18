@@ -3,7 +3,6 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>SatTrack</title>
-	<link rel="stylesheet" type="text/css" href="dashoard_styles.css">
     <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
 	<script src="jquery-2.1.4.min.js"></script>
     <script src="bootstrap.min.js"></script>
@@ -11,7 +10,90 @@
 </head>
 
 <body><div class="main container">
-    <h1>Hello! This is the Dashboard!</h1>
+	<form class="form-horizontal">
+<fieldset>
+
+<!-- Form Name -->
+<legend>SatTrack - New Satellite</legend>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="id">Satellite Name</label>
+  <div class="col-md-4">
+  <input id="id" name="id" type="text" placeholder="" class="form-control input-md">
+
+  </div>
+</div>
+
+<!-- Prepended text-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="prependedtext">Coordinates</label>
+  <div class="col-md-4">
+    <div class="input-group">
+      <span class="input-group-addon">Latitude</span>
+      <input id="lat" name="lat" class="form-control" placeholder="" type="text">
+    </div>
+
+  </div>
+</div>
+
+<!-- Prepended text-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="prependedtext"></label>
+  <div class="col-md-4">
+    <div class="input-group">
+      <span class="input-group-addon">Longitude</span>
+      <input id="lon" name="lon" class="form-control" placeholder="" type="text">
+    </div>
+
+  </div>
+</div>
+
+<!-- Prepended text-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="prependedtext"></label>
+  <div class="col-md-4">
+    <div class="input-group">
+      <span class="input-group-addon">Elevation</span>
+      <input id="ele" name="ele" class="form-control" placeholder="" type="text">
+    </div>
+
+  </div>
+</div>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="textinput">Fast Fwd</label>
+  <div class="col-md-2">
+  <input id="trace" name="trace" type="text" placeholder="Factor" class="form-control input-md">
+  <span class="help-block">Leave empty for real-time</span>
+  </div>
+</div>
+
+<!-- Select Basic -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="selectbasic">Track</label>
+  <div class="col-md-2">
+    <select id="track" name="track" class="form-control">
+      <option value="0">No</option>
+      <option value="1">Yes</option>
+    </select>
+  </div>
+</div>
+
+</fieldset>
+
+</form>
+
+<!-- Button -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="singlebutton"></label>
+  <div class="col-md-4">
+    <button id="create" name="create" class="btn btn-primary">Create</button>
+  </div>
+</div>
+
+
 </div></body>
 
 </html>

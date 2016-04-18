@@ -1,6 +1,6 @@
 ﻿$(document).ready(function() {
 	console.log("Document Loaded");
-	setVariables()	
+	setVariables()
 	drawMap();
     drawSat();
     setClickListeners();
@@ -12,12 +12,12 @@ var setVariables = function() {
     $width = window.outerHeight < window.innerWidth ? 0.45 * window.innerWidth : 0.9 * window.innerWidth;
     $height = $width;
     if (window.outerHeight > window.innerWidth) {d3.select(".ui").attr("width", "100%");}
-    
+
     // append svg to document to draw on
     $svg = d3.select(".svg").append("svg")
     .attr("width", $width)
     .attr("height", $height);
-    
+
     // set initial position and references to table cells
     $lon = 0;
 	$lat = 0;
@@ -25,28 +25,28 @@ var setVariables = function() {
 	$alt = 0;
     $time = "";
     $log = $("#log");
-    
+
     $stop_flag = false;
-    
+
     $trajectory = [];
-	
+
 	$lonlabel = d3.select("#lon");
 	$latlabel = d3.select("#lat");
 	$azilabel = d3.select("#azi");
 	$altlabel = d3.select("#alt");
 	$timelabel = d3.select("#time");
-    
+
     // set up projection as a globe
     $projection = d3.geo.orthographic()
         .scale($width * 0.459)  // experimentally determined factor
         .translate([$width / 2, $height / 2])
         .clipAngle(90)
         .precision(1);
-    
+
     // set up path (to draw map with)
     $path = d3.geo.path()
         .projection($projection);
-    
+
 }
 
 function setClickListeners() {
@@ -56,7 +56,7 @@ function setClickListeners() {
                 $stop_flag = false;
             });
     });
-    
+
     $("#stopcomputing").click(function() {
         $trajectory = [];
         $.get(window.location.href + "?stopcomputing")
@@ -64,11 +64,11 @@ function setClickListeners() {
                 $stop_flag = true;
             });
     });
-    
+
     $("#starttracking").click(function() {
         $.get(window.location.href + "?starttracking");
     });
-    
+
     $("#stoptracking").click(function() {
         $.get(window.location.href + "?stoptracking");
     });
@@ -77,8 +77,8 @@ function setClickListeners() {
 var drawMap = function() {
 
     var graticule = d3.geo.graticule();
-	
-	
+
+
 	$svg.append("defs").append("path")
 		.datum({type: "Sphere"})
 		.attr("id", "sphere")
@@ -110,7 +110,7 @@ var drawMap = function() {
 		  .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
 		  .attr("class", "boundary")
 		  .attr("d", $path);
-      
+
       $svg.append("path")
           .datum({type: "LineString", coordinates: $trajectory})
           .attr("d", $path)
@@ -129,7 +129,7 @@ var drawSat = function() {
 		.attr("r", "8px")
 		.attr("fill", "red")
 		.attr("class", "satellite");
-    
+
 }
 
 function getStatus(){
@@ -139,19 +139,19 @@ function getStatus(){
 			$az = parseFloat(data.az);
 			$alt = parseFloat(data.alt);
 			$time = data.time;
-            
+
             addTrajectory($lat, $lon);
             appendLog(data.log);
-            
+
 			$lonlabel.text($lon.toFixed(3));
 			$latlabel.text($lat.toFixed(3));
 			$azilabel.text($az.toFixed(3));
 			$altlabel.text($alt.toFixed(3));
 			$timelabel.text($time + " UTC");
-            
+
             rotateProjection($lat, $lon);
             plotPoints($lat, $lon);
-            
+
 			setTimeout(getStatus, 1000*data.interval);
 	}).fail(function() {
         setTimeout(getStatus, 2000);
@@ -181,7 +181,7 @@ function addTrajectory(lat, lon) {
 
 function appendLog(log) {
     for (i=0; i<log.length; i++) {
-        $log.append("<p>" + log[i] + "</p>" );
+        $log.prepend("<p>" + log[i] + "</p>" );
     }
-    $log.scrollTop($log.prop("scrollHeight"));
+    //$log.scrollTop($log.prop("scrollHeight"));
 }

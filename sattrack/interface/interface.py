@@ -7,12 +7,17 @@ import SimpleHTTPServer
 import os
 from ..helpers import *
 
+DAEMON = True
 
 class Server:
+    '''This class maintains a single server thread across all instances of SatTrack.
+    If a server is already running, and start_server(new=False) then does nothing.
+    Else for the first instance or when new=True, creates a new server thread.
+    '''
     isServing = False
-    server = None
-    server_thread = None
-    stop = th.Event()
+    server = None           # single server shared by all instances of SatTrack
+    server_thread = None    # single thread shared by all instances of SatTrack
+    stop = th.Event()       # event that signals server thread to terminate
 
     def __init__(self):
         #self.server_thread = th.Thread(target=self._serve)
@@ -43,7 +48,7 @@ class Server:
 
     def serve(self):
         Server.server_thread = self.server_thread
-        Server.server_thread.daemon = True
+        Server.server_thread.daemon = DAEMON
         Server.server_thread.start()
 
     def _serve(self):
@@ -66,6 +71,7 @@ class Server:
 class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     sources = {}
+    localpath = sanitize_url(os.path.dirname(__file__)) + '/'
 
     def do_GET(self):
         """
@@ -74,87 +80,57 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
         :return:
         """
         source = None
-        localpath = sanitize_url(os.path.dirname(__file__)) + '/'
+        localpath = Interface.localpath
         parsed = parse_url(self.path)
-        #print parsed
-        #print '\noriginal path: ' + self.path + '\n'
-        if self.path == '/':                            # i.e. localhost:port_number/
-            self.path = localpath + 'dashboard.html'
+        if parsed['path'] == '/' and parsed['query'] is not None:
+            from ..sattrack import SatTrack # python prevents repetitive imports
+            satellite = populate_class_from_query(SatTrack(), parsed['query'])
+            Interface.sources[satellite.id] = satellite
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(satellite.id)
+            return
+        elif self.path == '/' and parsed['query'] is None:  # i.e. localhost:port_number/
+            self.path = localpath + 'dashboard.html'      # set entry point
             #print '\npath modified to: ' + self.path
-        if parsed['id']:                                # i.e. localhost:port_number/valid_id/
-            if parsed['id'] in Interface.sources:
-                source = Interface.sources[parsed['id']]
-            if not parsed['query']:                     # if GET request is not a JSON query then continue page loading
-                self.path = localpath
-        if parsed['staticfile']:                        # i.e. some_path/script.js (as referenced in index.html)
-            if parsed['staticfile'] in os.listdir(os.path.dirname(__file__)):
-                self.path = localpath + parsed['staticfile']
-                #print '\nstatic file requested: ' + self.path
-            else:
-                self.send_response(400, 'File not found: ' + parsed['staticfile'])
-                return
-        if parsed['query'] and source:                             # handle any queries
-            if parsed['query'] == u'status' and source:
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(self.genJSON(source))
-            elif parsed['query'] == u'stopcomputing':
-                self.send_response(200)
-                source.stop_computing()
-            elif parsed['query'] == u'stoptracking':
-                self.send_response(200)
-                source.stop_tracking()
-            elif parsed['query'] == u'startcomputing':
-                self.send_response(200)
-                source.begin_computing(interval=source.current_config['interval'], trace=source.current_config['trace'])
-            elif parsed['query'] == u'starttracking':
-                source.begin_tracking(interval=source.current_config['interval'])
-            else:
-                self.send_response(400, 'Source not found.')
-            return      # quit after returning json
+        else:                                             # serve satellite page / query
+            if parsed['id']:                                # i.e. localhost:port_number/valid_id/
+                if parsed['id'] in Interface.sources:
+                    source = Interface.sources[parsed['id']]
+                if not parsed['query']:                     # if GET request is not a JSON query then continue page loading
+                    self.path = localpath
+            if parsed['staticfile']:                        # i.e. some_path/script.js (as referenced in index.html)
+                if parsed['staticfile'] in os.listdir(os.path.dirname(__file__)):
+                    self.path = localpath + parsed['staticfile']
+                    #print '\nstatic file requested: ' + self.path
+                else:
+                    self.send_response(400, 'File not found: ' + parsed['staticfile'])
+                    return
+            if parsed['query'] and source:                             # handle any queries
+                if parsed['query'] == u'status' and source:
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(self.genJSON(source))
+                elif parsed['query'] == u'stopcomputing':
+                    self.send_response(200)
+                    source.stop_computing()
+                elif parsed['query'] == u'stoptracking':
+                    self.send_response(200)
+                    source.stop_tracking()
+                elif parsed['query'] == u'startcomputing':
+                    self.send_response(200)
+                    source.begin_computing()
+                elif parsed['query'] == u'starttracking':
+                    self.send_response(200)
+                    source.begin_tracking()
+                else:
+                    self.send_response(400, 'Source not found.')
+                return      # quit after returning json
 
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
-    def _do_GET(self):
-        #   DEPRACATED
-        """
-        This function handles GET requests made by the client. The general URL is of the format:
-            http://localhost:PORT/SATELLITE_ID/?QUERY
-        :return:
-        """
-        parsed_path = urlparse(self.path)
-        path = re.split(r'/|\\', parsed_path[2])
-        path = [x for x in path if x != '']     # isolate path to find which satellite to use as source
-        #print 'interpreted path: '
-        #print path
-        #print self.path
-        # print Interface.sources.keys()
-        if len(path) == 0:          # i.e no path given, set it to 'interface' to get index.html
-            #print 'zero length path, new path is:'
-            self.path = os.path.dirname(__file__)
-            #print self.path
-        elif len(path) > 0:
-            if path[-2] == 'interface' and path[-1] in os.listdir(os.path.dirname(__file__)):   # path given is an actual file
-                #print 'requesting file ' + self.path
-                self.path = os.path.dirname(__file__) + '/' + unicode(path[-1])   # set path to the file
-            else:   # path is not a file and is not empty -> should be SATELLITE_ID
-                # print 'SAT ID provided in URL:', path[0]
-                try:
-                    source = Interface.sources[path[1]]
-                    #print 'Source found.'
-                except KeyError as e:
-                    print 'ID not found:', e.message
-                self.path = os.path.dirname(__file__)  + '/'    # load the original page
-        if parsed_path.query == u'status':
-            # print 'request validated:', path[0]
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps(self.genJSON(source)))
-            return      # quit after returning json
-        #print 'GETting path: ' + self.path
-        return SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
     def genJSON(self, source):
         d = {}
@@ -162,7 +138,7 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
         d['lat'] = to_degs(source.satellite.sublat)
         d['az'] = to_degs(source.satellite.az)
         d['alt'] = to_degs(source.satellite.alt)
-        d['interval'] = source.interval
+        d['interval'] = source.default_config['interval']
         d['time'] = str(source.observer.date)
         d['log'] = source.get_log()
         return json.dumps(d)
@@ -172,14 +148,21 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 
 def main():
-    s = Server()
-    s.start_server()
-    i = input('Exit? ... ')
-    if i =='y':
-        s.stop_server()
-    print 'server closed'
+    Server().start_server()
+
 
 def debug():
     print os.path.dirname(__file__)
     print os.listdir(os.path.dirname(__file__))
     print __file__
+
+if __name__=='__main__':
+    import sys
+    print os.path.dirname(__file__)
+    sys.path.append(os.path.dirname(__file__))
+    p = th.Thread(target=main)
+    p.start()
+    i=''
+    while i!='exit':
+        i = raw_input("Enter 'exit' to stop server:   ")
+    p.join(timeout=1)
