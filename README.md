@@ -95,9 +95,11 @@ The arduino is programmed to control up to 6 servo motors. The pin assignments f
 After the satellite TLE data has been retrieved, observer location is set, and position calculations have begun,
 ```python
 # continuing from SatTrack instance 's'
-s.connect_servos(port='COM3', motors=(1,2), minrange(0,0), maxrange=(90,360))   # (altitude servo, azimuth servo)
+s.connect_servos(port='COM3', motors=(1,2), minrange(0,0), maxrange=(90,360), \
+                  angle_map=(lambda x:x, lambda x:x), pwm=(900,2100), timeout=1)   # (altitude servo, azimuth servo)
 s.begin_tracking()
-```
+```  
+*Note:* In case of empty/None parameters, default values in `defaults.py` are used.  
 And that's it!
 
 ####Clean up
