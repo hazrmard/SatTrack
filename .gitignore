@@ -72,3 +72,4 @@ scratch/
 *.dat
 spacecraft/
 *.log
+FOXDB/
