@@ -32,8 +32,9 @@ class SatTrack:
         self.stopComputing = th.Event()
         self.default_config = {'interval':defaults.interval, 'trace': defaults.trace, 'port':defaults.port, 'motors':defaults.motors, 'pwm':defaults.pwm, 'minrange':defaults.minrange, \
                                         'maxrange':defaults.maxrange, 'lat': defaults.lat, 'lon': defaults.lon, 'ele': defaults.ele, 'initpos': defaults.initpos, 'timeout': defaults.timeout, \
-                                        'angle_map': defaults.angle_map, 'baudrate': defaults.baudrate}
+                                        'angle_map': defaults.angle_map, 'baudrate': defaults.baudrate, 'host': defaults.host}
         self.log = ['SatTrack initialized.']
+        self.radio = None
 
         if MOTOR_DEBUG_MODE:
             print "Debug Mode..."
@@ -138,21 +139,20 @@ class SatTrack:
                     self._isActive = False
             time.sleep(t)
 
-    def visualize(self, host=None, port=8000, openbrowser=True):
+    def visualize(self, host='localhost', port=8000, openbrowser=False):
         """
         Start a local server and visualize satellite position. URL is of the format: http://localhost:8000/<name>/
         <name> is sanitized by removing any non-alphanumeric characters.
         :param openbrowser: False -> start server only, True -> start server and open browser.
         """
         host = self.default_config['host'] if host is None else host
-        self.default_config['host'] = host
 
         self.server.host = host
         self.server.port = port
         if not Server.server:
             self.server.start_server(host, new=True)
         if openbrowser:
-            url = 'http://' + str(self.server.host) + ':' + str(self.server.port) + '/' + self.id + '/'
+            url = 'http://localhost' + ':' + str(self.server.port) + '/' + self.id + '/'
             url = sanitize_url(url)
             print "opening URL: " + url
             wb.open(url, new=2)
@@ -253,6 +253,29 @@ class SatTrack:
         self.azmotor.initialize()      # move to starting positions
         self.altmotor.initialize()
         self.put_log('Connected to serial port: ' + str(port) + ' on motors: ' + str(motors[0]) + ' ,' + str(motors[1]) + '.')
+
+    def start_radio(self, freq, output):
+        '''Uses rtlsdr module to connect to a SDR dongle and store output as a wav file.
+        :output name of an output file
+        :freq center frequency of reception
+        '''
+        import rtlsdr
+        if rtlsdr.STATUS==-1:
+            self.put_log('Could not connect to radio. Dependencies not installed.')
+            return
+        self.radio = rtlsdr.RtlSdr(freq=freq, output=output)
+        self.radio.start_radio()
+
+    def stop_radio(self, del_files=True):
+        '''Terminate radio process.
+        :del_files whether to delete or keep intermediate files
+        '''
+        self.radio.stop_radio(del_files)
+
+    def decode(self):
+        '''decode data file using AMSAT Fox telem package.
+        '''
+        self.radio.decode()
 
     def next_pass(self, datestr=None, convert=True):
         """

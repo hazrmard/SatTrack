@@ -66,3 +66,9 @@ target/
 
 *.csv
 scratch/
+*.bin
+*.wav
+*.properties
+*.dat
+spacecraft/
+*.log

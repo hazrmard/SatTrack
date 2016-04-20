@@ -82,8 +82,12 @@ def find_arduino():
     P = comports()
     if P:
         for p in P:
-            if 'Arduino' in p.description or 'Arduino' in p.manufacturer:
-                return p.device
+	    try:
+                if 'Arduino' in p.description or 'Arduino' in p.manufacturer:
+                    return p.device
+	    except:
+		pass
+	print 'Arduino not detected on any port.'
     else:
         print 'Arduino not detected on any port.'
     return None
@@ -97,3 +101,4 @@ def find_arduino():
 #            data = data[0].rstrip().strip('\r').strip('\n')     # remove \r and \n
 #            data = data.splitlines()
 #            return data
+
