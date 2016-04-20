@@ -266,10 +266,15 @@ class SatTrack:
         self.radio = rtlsdr.RtlSdr(freq=freq, output=output)
         self.radio.start_radio()
 
-    def stop_radio(self):
-        self.radio.stop_radio()
+    def stop_radio(self, del_files=True):
+        '''Terminate radio process.
+        :del_files whether to delete or keep intermediate files
+        '''
+        self.radio.stop_radio(del_files)
 
     def decode(self):
+        '''decode data file using AMSAT Fox telem package.
+        '''
         self.radio.decode()
 
     def next_pass(self, datestr=None, convert=True):

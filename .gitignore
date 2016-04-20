@@ -70,3 +70,5 @@ scratch/
 *.wav
 *.properties
 *.dat
+spacecraft/
+*.log

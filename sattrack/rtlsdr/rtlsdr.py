@@ -19,8 +19,8 @@ class RtlSdr:
     def start_radio(self):
         self.radio = autoreceiver.AutoReceiver(freq=self.freq, file=self.output)
 
-    def stop_radio(self):
-        self.radio.terminate(True)
+    def stop_radio(self, del_files=True):
+        self.radio.terminate(del_files)
 
     def decode(self):
         self.decoder = autodecoder.AutoDecoder(self.output+'.wav')

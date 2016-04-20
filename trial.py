@@ -60,7 +60,7 @@ def main():
 
     print 'Connecting to servo motors.'
     s.connect_servos(port=PORT, minrange=(ALTRANGE[0], AZRANGE[0]), maxrange=(ALTRANGE[1], AZRANGE[1]), \
-                                pwm=PWM, map=(ALTMAP, AZMAP), timeout=TIMEOUT)
+                                pwm=PWM, angle_map=(ALTMAP, AZMAP), timeout=TIMEOUT)
     print 'Test angle mapping: '
     print 'az.map(0):' + str(s.azmotor.map(0)), '\taz.map(360):' + str(s.azmotor.map(360))
     print 'alt.map(0): ' + str(s.altmotor.map(0)), '\talt.map(90): ' + str(s.altmotor.map(90))
@@ -91,6 +91,20 @@ def main():
         if i =='n': break
     if i=='y':
         s.begin_tracking()
+
+    i='n'
+    while not i=='y':
+        i = raw_input('Start receiving? [y/n]   ')
+        if i =='n': break
+    if i=='y':
+        s.start_radio(output='AO85', freq='145.98M')
+
+    i='n'
+    while not i=='y':
+        i = raw_input('Stop receiving? [y/n]   ')
+    if i=='y':
+        s.stop_radio()
+        s.decode()
 
     raw_input('Press return to exit...')
     try:
