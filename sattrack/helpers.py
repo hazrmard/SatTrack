@@ -50,6 +50,8 @@ def tolocal(utc):       # takes ephem date object and returns localtime string
 
 
 def parse_text_tle(target, baseURL, extensions=('',)):
+    '''parse text files containing TLE data to identify satellite name and elements.
+    '''
     #pattern = target + r'[\s)(]*?.*?[\n\r](.+?)[\n\r](.+?)[\n\r]'
     pattern = r'[\s]*?.*?' + target + r'[\t )(]*?.*?[\n\r\f\v]+?(.+?)[\n\r\f\v]+?(.+?)[\n\r\f\v]'
     for path in extensions:
@@ -65,6 +67,10 @@ def parse_text_tle(target, baseURL, extensions=('',)):
 
 
 def populate_class_from_query(s, q):
+    '''Take a SatTrack class and set it up with a JSON dictionary or parameters
+    :s: SatTrack()
+    :q: queries
+    '''
     q = parse_qs(q, False)
     s.get_tle(q['id'][0])
     ele = None if 'ele' not in q else q['ele'][0]
@@ -91,14 +97,3 @@ def find_arduino():
     else:
         print 'Arduino not detected on any port.'
     return None
-
-# def parse_html_tle(baseURL=base_N2YO_URL, extensions=('',), xpath='//div/pre/text()'):
-#        for path in extensions:
-#            url = baseURL + path
-#            page = requests.get(url)                # getting html data
-#            tree = html.fromstring(page.text)       # converting to tree format for parsing
-#            data = tree.xpath(xpath)   # remove all newline and whitespace
-#            data = data[0].rstrip().strip('\r').strip('\n')     # remove \r and \n
-#            data = data.splitlines()
-#            return data
-

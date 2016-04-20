@@ -16,25 +16,25 @@ MOTOR_DEBUG_MODE = False
 
 class SatTrack:
     def __init__(self):
-        self.id = None
-        self.observer = ephem.Observer()
-        self.satellite = None
-        self.threads = {}
+        self.id = None          # name of satellite (case sensitice, alphanumeric only)
+        self.observer = ephem.Observer()    #observer class representing current location
+        self.satellite = None               #satellite object created by pyephem
+        self.threads = {}                   #dictionary of computing and tracking threads
         self.threads['tracker'] = None
         self.threads['motors'] = None
-        self.lock = th.Lock()
-        self._isActive = False
-        self.azmotor = None
-        self.altmotor = None
-        self.server = Server()
-        self.tle = None
+        self.lock = th.Lock()               #used to do non-threadsafe operations
+        self._isActive = False              #flag to see if satellite is computing
+        self.azmotor = None                 # azimuth motor, sattrack.Motor()
+        self.altmotor = None                # altitude motor, sattrack.Motor()
+        self.server = Server()              # sattrack.interface.Server()
+        self.tle = None                     # list of 2 line elements read
         self.stopTracking = th.Event()
         self.stopComputing = th.Event()
         self.default_config = {'interval':defaults.interval, 'trace': defaults.trace, 'port':defaults.port, 'motors':defaults.motors, 'pwm':defaults.pwm, 'minrange':defaults.minrange, \
                                         'maxrange':defaults.maxrange, 'lat': defaults.lat, 'lon': defaults.lon, 'ele': defaults.ele, 'initpos': defaults.initpos, 'timeout': defaults.timeout, \
                                         'angle_map': defaults.angle_map, 'baudrate': defaults.baudrate, 'host': defaults.host}
         self.log = ['SatTrack initialized.']
-        self.radio = None
+        self.radio = None                   # sattrack.rtlsdr.RtlSdr()
 
         if MOTOR_DEBUG_MODE:
             print "Debug Mode..."
@@ -74,33 +74,33 @@ class SatTrack:
         self.id = sanitize(data[0])
         self.put_log('Loaded TLE from: ' + filename)
 
-    def get_tle(self, noradid, destination=None):
+    def get_tle(self, sat_id, destination=None):
         """
         parses CELESTRAK and AMSAT for satellite's TLE data using its NORAD id.
-        :param noradid: Satellite's designation
+        :param sat_id: Satellite's designation
         :param destination: Place to save the data for later use (optional).
         """
-        data = parse_text_tle(noradid, AMSAT_URL)
+        data = parse_text_tle(sat_id, AMSAT_URL)
         if not data:
-            data = parse_text_tle(noradid, base_CELESTRAK_URL, CELESTRAK_paths)
+            data = parse_text_tle(sat_id, base_CELESTRAK_URL, CELESTRAK_paths)
         if not data:
             return False
         if destination is not None:             # write to destination if provided
             f = open(destination, 'wb')
-            wdata = [str(noradid) + '\n'] + [data[0] + '\n'] + [data[1] + '\n']
+            wdata = [str(sat_id) + '\n'] + [data[0] + '\n'] + [data[1] + '\n']
             f.writelines(wdata)
             f.close()
-        self.satellite = ephem.readtle(noradid, data[0], data[1])
-        self.tle = [str(noradid), data[0], data[1]]
-        self.id = sanitize(str(noradid))
-        self.put_log('Found ID: ' + str(noradid))
+        self.satellite = ephem.readtle(sat_id, data[0], data[1])
+        self.tle = [str(sat_id), data[0], data[1]]
+        self.id = sanitize(str(sat_id))
+        self.put_log('Found ID: ' + str(sat_id))
         return True
 
-    def begin_computing(self, interval=None, trace=None, display=False):
+    def begin_computing(self, interval=None, trace=None):
         """
         Starts a thread that computes satellite's coordinates in real time based on the observer's coordinates.
         :param interval: Time between computations.
-        :param display: To show a map with the satellite's location.
+        :param trace: times satellite computation is sped up
         """
         interval = self.default_config['interval'] if interval is None else interval
         self.default_config['interval'] = interval
@@ -124,6 +124,7 @@ class SatTrack:
         This function runs in a thread started in 'begin_computing' and recomputes the satellites position after
         interval 't'.
         :param t: Interval between computations
+        :param trace: times satellite computation is sped up
         """
         while not self.stopComputing.isSet():
             with self.lock:
@@ -139,7 +140,7 @@ class SatTrack:
                     self._isActive = False
             time.sleep(t)
 
-    def visualize(self, host='localhost', port=8000, openbrowser=False):
+    def visualize(self, host=None, port=8000, openbrowser=False):
         """
         Start a local server and visualize satellite position. URL is of the format: http://localhost:8000/<name>/
         <name> is sanitized by removing any non-alphanumeric characters.
@@ -217,6 +218,9 @@ class SatTrack:
         :param minrange: A touple containing the minimum angle for (altitude, azimuth) motors
         :param maxrange: A touple containing the maximum angle for (altitude, azimuth) motors
         :param initpos: A touple containing the initial orientation angle for (altitude, azimuth) motors
+        :angle_map: a tuple of functions that map satellite coordinates to numbers sent to the arduino
+        :pwm: a tuple of pulse width values used by the servo motors
+        :timeout: seconds to wait for the servos to setup
         """
         port = self.default_config['port'] if port is None else port
         motors = self.default_config['motors'] if motors is None else motors
@@ -262,6 +266,7 @@ class SatTrack:
         import rtlsdr
         if rtlsdr.STATUS==-1:
             self.put_log('Could not connect to radio. Dependencies not installed.')
+            print 'Could not connect to radio. Dependencies not installed.'
             return
         self.radio = rtlsdr.RtlSdr(freq=freq, output=output)
         self.radio.start_radio()
@@ -273,7 +278,10 @@ class SatTrack:
         self.radio.stop_radio(del_files)
 
     def decode(self):
-        '''decode data file using AMSAT Fox telem package.
+        '''decode data file using AMSAT Fox telem package. This calls a python
+        wrapper for the java package, which originally was a GUI but has been hacked
+        into a makeshift command-line callable application. Still throws GUI error
+        dialog boxes. ssh X forwarding should be enabled while using this function.
         '''
         self.radio.decode()
 
