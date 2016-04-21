@@ -85,6 +85,9 @@ class Interface(SimpleHTTPServer.SimpleHTTPRequestHandler):
         if parsed['path'] == '/' and parsed['query'] is not None:
             from ..sattrack import SatTrack # python prevents repetitive imports
             satellite = populate_class_from_query(SatTrack(), parsed['query'])
+            if satellite.id in Interface.sources:
+                Interface.sources[satellite.id].stop_computing()
+                Interface.sources[satellite.id].stop_tracking()
             Interface.sources[satellite.id] = satellite
             self.send_response(200)
             self.send_header('Content-Type', 'text/plain')

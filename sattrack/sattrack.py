@@ -394,10 +394,10 @@ class SatTrack:
         self.stop_computing()
         self.stop_tracking()
         self.server.remove_source(self)
-        try:
-            ServoController.serial_port.close()
-        except:
-            pass
+        # try:
+        #     ServoController.serial_port.close()
+        # except:
+        #     pass
         print "stopped"
 
 
@@ -406,6 +406,7 @@ class ServoController:
     Interface between SatTrack and individual motors.
     """
     serial_port = None
+    lock = th.Lock()
 
     def __init__(self, port=None, motors=None, mode='a', pwm=None, baudrate=None, timeout=None):
         self.portname = defaults.port if port is None else port
@@ -462,7 +463,8 @@ class Motor:
         elif self.mode == 's':
             pulse = self._angle_to_pulse(mapped_angle)
             serialarg += str(pulse)
-        self.port.write(serial_arg)
+        with ServoController.lock:
+            self.port.write(serial_arg)
         if MOTOR_DEBUG_MODE:
             print angle, self.port.readline().strip()
         self.current_pos = angle
