@@ -113,7 +113,7 @@ _ = raw_input("Press any key to stop...") # any duration to record
 s.stop_radio()
 ```
 Output is stored as a `.wav` file.
-####Clean up
+###Clean up
 ```python
 s.stop()                # stop computations and tracking
 s.server.stop_server()  # stop server in case you are visualizing satellite
