@@ -3,10 +3,12 @@ Real time tracking of satellites
 
 This code is for my engineering senior design project. The python class SatTrack is the main interface. It does the following things:
 * Load satellite TLE data from file / parse web sources for it
-* Track satellite position in real time
+* Track satellite position in real or sped up time
 * Predict next pass (or next n passes)
-* Connect to servo motors via serial port - arduino interface
+* Controll antenna using servo motors via serial port - arduino interface
 * Visualize satellite position using a web interface implemented in D3js
+* Access the GUI on a mobile/remote device over wifi
+* Record transmissions at a particular frequency using RTL SDR.
 
 An example of satellite tracking interface:  
 ![image](https://github.com/hazrmard/SatTrack/raw/interface_cleanup/demo.gif)
@@ -36,14 +38,15 @@ Note: python should previously be added to the system PATH variable. Otherwise t
 
 External python dependencies are:
 * [PyEphem](https://pypi.python.org/pypi/pyephem/)
-* [PySerial](https://pypi.python.org/pypi/pyserial)
-* [Requests](https://pypi.python.org/pypi/requests)
+* [PySerial](https://pypi.python.org/pypi/pyserial) (for connecting to Arduino)
+* [Requests](https://pypi.python.org/pypi/requests) (for downloading satellite data)
 * [Dateutil](https://pypi.python.org/pypi/python-dateutil)
+* [SDR_flow_automation](https://github.com/hazrmard/SDR_flow_automation) (for using RTL software defined radio)
 
 For illustration the `sandbox.py` and `trial.py` which contain basic uses of the SatTrack class.
 
 ##Usage  
-###Easy Way  
+##Easy Way  
 The easy way is a GUI in a web browser. After installing SatTrack, type:
 ```bash
 > python -m sattrack.interactive
@@ -51,8 +54,8 @@ The easy way is a GUI in a web browser. After installing SatTrack, type:
 The GUI simplifies controls by requiring less arguments. The values put in `defaults.py` are used for all satellite instances created.  
 This starts a local server on `localhost:8000` and also broadcasts it over the device's network. You can open up the interface by typing `localhost:8000` on your local browser. Or you can access the interface from any web browser on another device by going to `<HOST_IP_ADDRESS>:8000` e.g `192.168.42.1:8000`. For connecting servos etc. see *Set up* and *Wiring* in the next section.  
 
-###Hard Way  
-####Tracking Satellites
+##Hard Way  
+###Tracking Satellites
 ```python
 from sattrack import SatTrack   # Import the `SatTrack` class:
 s = SatTrack()                  # Instantiate class
@@ -64,7 +67,7 @@ s.show_location()               # Start printing satellite data to console
 s.visualize()                   # Start a server and visualize satellite on map in browser
 ```
 Check [AMSAT](http://www.amsat.org/amsat/ftp/keps/current/nasa.all) and [CELESTRAK](http://www.celestrak.com/NORAD/elements/) for satellite names.  The TLE format SatTrack accepts can be seen in `AO-85.tle`.  
-####Servo Control
+###Servo Control
 This functionality was added to allow antennas to track a satellite's pass using 2 servo motors. One servo motor controls azimuth and the other controls altitude.  
 Servo control is split into 2 parts: getting coordinates for satellite, and conveying them to servo motors.
 ####Set up
@@ -101,7 +104,15 @@ s.begin_tracking()
 ```  
 *Note:* In case of empty/None parameters, default values in `defaults.py` are used.  
 And that's it!
-
+  
+###Listening in  
+`SatTrack` comes with a basic interface to use RTL software defined radios. Before using this, the [SDR_flow_automation](https://github.com/hazrmard/SDR_flow_automation) dependency needs to be installed and `java`, `sox`, and `rtl-sdr` need to be added to the system path. More instructions can be found on the repository page. After that:  
+```python
+s.start_radio('freq', 'output_file')      # e.g freq='123M' for 123 MHz
+_ = raw_input("Press any key to stop...") # any duration to record
+s.stop_radio()
+```
+Output is stored as a `.wav` file.
 ####Clean up
 ```python
 s.stop()                # stop computations and tracking
