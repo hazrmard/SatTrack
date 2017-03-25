@@ -13,13 +13,13 @@ This code is for my engineering senior design project. The python class SatTrack
 An example of satellite tracking interface:  
 ![image](https://github.com/hazrmard/SatTrack/raw/interface_cleanup/demo.gif)
 
-##Requirements
+## Requirements
 
-###Basic
+### Basic
 * Python 2.7
 * A modern web browser (only for visualization)  
 
-###Antenna control
+### Antenna control
 * Arduino Uno (Board and IDE)
 * 2 x servos
 * 5-7V DC power supply
@@ -45,8 +45,8 @@ External python dependencies are:
 
 For illustration the `sandbox.py` and `trial.py` which contain basic uses of the SatTrack class.
 
-##Usage  
-##Easy Way  
+## Usage  
+## Easy Way  
 The easy way is a GUI in a web browser. After installing SatTrack, type:
 ```bash
 > python -m sattrack.interactive
@@ -54,8 +54,9 @@ The easy way is a GUI in a web browser. After installing SatTrack, type:
 The GUI simplifies controls by requiring less arguments. The values put in `defaults.py` are used for all satellite instances created.  
 This starts a local server on `localhost:8000` and also broadcasts it over the device's network. You can open up the interface by typing `localhost:8000` on your local browser. Or you can access the interface from any web browser on another device by going to `<HOST_IP_ADDRESS>:8000` e.g `192.168.42.1:8000`. For connecting servos etc. see *Set up* and *Wiring* in the next section.  
 
-##Hard Way  
-###Tracking Satellites
+## Hard Way  
+
+### Tracking Satellites
 ```python
 from sattrack import SatTrack   # Import the `SatTrack` class:
 s = SatTrack()                  # Instantiate class
@@ -63,20 +64,21 @@ s.set_location(lat='0', lon='0', ele=100)   # Set observer location
 s.get_tle('satellite_name')     # Search CELESTRAK or AMSAT for satellite TLE data
 s.load_tle('file_location')     # OR Load TLE from a file. get_tle() and load_tle() create the satellite to track.
 s.begin_computing()             # Start calculating topocentric coordinates at 1 second intervals.
-s.show_location()               # Start printing satellite data to console
 s.visualize()                   # Start a server and visualize satellite on map in browser
 ```
 Check [AMSAT](http://www.amsat.org/amsat/ftp/keps/current/nasa.all) and [CELESTRAK](http://www.celestrak.com/NORAD/elements/) for satellite names.  The TLE format SatTrack accepts can be seen in `AO-85.tle`.  
-###Servo Control
+
+### Servo Control
 This functionality was added to allow antennas to track a satellite's pass using 2 servo motors. One servo motor controls azimuth and the other controls altitude.  
 Servo control is split into 2 parts: getting coordinates for satellite, and conveying them to servo motors.
-####Set up
+
+#### Set up
 1. Connect an arduino board via a USB port to the computer.
 2. Load the file `ServoCont/multipleSerialServoControl/multipleSerialServoControl.ino` onto the board.
 3. Quit the arduino IDE to free up USB port control.
 For most servo motors, you will not need to make any changes to the `.ino` file.
 
-####Wiring
+#### Wiring
 Each servo motor is has 3 wire connections:
 * Voltage High (usually red)
 * Ground (usually black)
@@ -94,18 +96,23 @@ The arduino is programmed to control up to 6 servo motors. The pin assignments f
 | 5 | 10 |  
 | 6 | 11 |  
 
-####Connecting SatTrack
+#### Connecting SatTrack
 After the satellite TLE data has been retrieved, observer location is set, and position calculations have begun,
 ```python
 # continuing from SatTrack instance 's'
 s.connect_servos(port='COM3', motors=(1,2), minrange(0,0), maxrange=(90,360), \
-                  angle_map=(lambda x:x, lambda x:x), pwm=(900,2100), timeout=1)   # (altitude servo, azimuth servo)
+                  angle_map=(lambda x:x, lambda x:x), pwm=(900,2100), timeout=1)   
+# All tuples have parameters for (altitude servo, azimuth servo)
+# --angle_map is a tuple of functions that takes in the aititude/azimuth angle (degrees)
+#   and modifies it according to antenna position (e.g if it is on a slope etc.).
+# --pwm is a tuple containing minimum and maximum pulse widths that are used to control
+#   the servos.
 s.begin_tracking()
 ```  
 *Note:* In case of empty/None parameters, default values in `defaults.py` are used.  
 And that's it!
   
-###Listening in  
+### Listening in  
 `SatTrack` comes with a basic interface to use RTL software defined radios. Before using this, the [SDR_flow_automation](https://github.com/hazrmard/SDR_flow_automation) dependency needs to be installed and `java`, `sox`, and `rtl-sdr` need to be added to the system path. More instructions can be found on the repository page. After that:  
 ```python
 s.start_radio('freq', 'output_file')      # e.g freq='123M' for 123 MHz
@@ -113,7 +120,8 @@ _ = raw_input("Press any key to stop...") # any duration to record
 s.stop_radio()
 ```
 Output is stored as a `.wav` file.
-###Clean up
+
+### Clean up
 ```python
 s.stop()                # stop computations and tracking
 s.server.stop_server()  # stop server in case you are visualizing satellite
