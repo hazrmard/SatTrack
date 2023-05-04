@@ -10,7 +10,7 @@ setup(
     author="Ibrahim Ahmed",
     description="Track and visualize satellites and control antenna position",
     packages=find_packages(),
-    install_requires=['six', 'pyserial', 'requests', 'python-dateutil'],
+    install_requires=['six', 'pyserial', 'requests<=2.27.1', 'python-dateutil'],
     include_package_data = True,
 )
 
